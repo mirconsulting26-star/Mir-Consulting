@@ -1,56 +1,51 @@
-import { useEffect } from "react";
-import "@/App.css";
+import React from "react";
+import "@/index.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import { Toaster } from "@/components/ui/sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import Layout from "@/components/layout/Layout";
+import Home from "@/pages/Home";
+import About from "@/pages/About";
+import Services from "@/pages/Services";
+import Industries from "@/pages/Industries";
+import CaseStudies from "@/pages/CaseStudies";
+import Insights from "@/pages/Insights";
+import Contact from "@/pages/Contact";
+import Admin from "@/pages/Admin";
+import NotFound from "@/pages/NotFound";
 
 function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
+    return (
+        <div className="App bg-mir-bg text-mir-text min-h-screen">
+            <BrowserRouter>
+                <Routes>
+                    <Route element={<Layout />}>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/services" element={<Services />} />
+                        <Route path="/industries" element={<Industries />} />
+                        <Route path="/case-studies" element={<CaseStudies />} />
+                        <Route path="/insights" element={<Insights />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="*" element={<NotFound />} />
+                    </Route>
+                    <Route path="/admin" element={<Admin />} />
+                </Routes>
+            </BrowserRouter>
+            <Toaster
+                theme="light"
+                position="bottom-right"
+                toastOptions={{
+                    style: {
+                        background: "hsl(0, 0%, 100%)",
+                        color: "hsl(222, 47%, 11%)",
+                        border: "1px solid hsl(220, 13%, 91%)",
+                        borderRadius: 0,
+                    },
+                }}
+            />
+        </div>
+    );
 }
 
 export default App;
