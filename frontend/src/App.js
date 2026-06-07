@@ -15,6 +15,7 @@ import Insights from "@/pages/Insights";
 import InsightDetail from "@/pages/InsightDetail";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
+import AdminResetPassword from "@/pages/AdminResetPassword";
 import NotFound from "@/pages/NotFound";
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
                             <Route path="*" element={<NotFound />} />
                         </Route>
                         <Route path="/admin" element={<Admin />} />
+                        <Route path="/admin/reset/:token" element={<AdminResetPassword />} />
                     </Routes>
                 </BrowserRouter>
                 <Toaster

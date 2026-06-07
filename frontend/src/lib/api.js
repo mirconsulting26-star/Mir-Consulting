@@ -24,6 +24,24 @@ export const fetchCompany = () => api.get("/company").then((r) => r.data);
 export const adminLogin = (password) =>
     api.post("/admin/login", { password }).then((r) => r.data);
 
+export const forgotPassword = (email) =>
+    api.post("/admin/forgot-password", { email }).then((r) => r.data);
+
+export const validateResetToken = (token) =>
+    api.get(`/admin/reset-password/${token}`).then((r) => r.data);
+
+export const resetPassword = (token, new_password) =>
+    api.post("/admin/reset-password", { token, new_password }).then((r) => r.data);
+
+export const changePassword = (token, current_password, new_password) =>
+    api
+        .post(
+            "/admin/change-password",
+            { current_password, new_password },
+            { headers: authHeader(token) }
+        )
+        .then((r) => r.data);
+
 // ====== ADMIN: LEADS ======
 export const fetchLeads = (token, params = {}) =>
     api

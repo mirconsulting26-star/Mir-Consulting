@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 
 from email_service import send_new_lead_notification, send_invoice_email, is_configured as smtp_is_configured
 from invoice_pdf import render_invoice_pdf, fmt_money
+import auth_admin
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -249,9 +250,122 @@ async def get_case_study(slug: str):
 @api_router.post("/admin/login", response_model=AdminLoginResponse)
 @limiter.limit("5/minute")
 async def admin_login(request: Request, payload: AdminLogin):
-    if not secrets.compare_digest(payload.password, ADMIN_PASSWORD):
+    ok = await auth_admin.verify_admin_password(db, payload.password)
+    if not ok:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return AdminLoginResponse(token=ADMIN_TOKEN)
+
+
+class ForgotPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    token: str = Field(min_length=10, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+class ChangePasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+def _build_reset_email(token: str) -> tuple[str, str, str]:
+    base = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+    link = f"{base}/admin/reset/{token}" if base else f"/admin/reset/{token}"
+    subject = "Reset your MIR Consulting admin password"
+    text = (
+        "A password reset was requested for the MIR Consulting admin console.\n\n"
+        f"Open this link within {auth_admin.RESET_TOKEN_TTL_MIN} minutes to choose a new password:\n"
+        f"{link}\n\n"
+        "If you did not request this, you can safely ignore this email — your password "
+        "will not be changed."
+    )
+    html = f"""
+<!doctype html><html><body style="font-family:Arial,sans-serif;color:#0f172a;background:#f8fafc;padding:24px">
+  <table style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0">
+    <tr><td style="padding:24px 28px;border-bottom:1px solid #e2e8f0">
+      <div style="font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#0a66ff">MIR Consulting · Admin</div>
+      <h2 style="margin:8px 0 0;font-weight:300;color:#0f172a">Password reset</h2>
+    </td></tr>
+    <tr><td style="padding:24px 28px;font-size:14px;line-height:1.6">
+      <p>A password reset was requested for the admin console.</p>
+      <p style="margin:24px 0"><a href="{link}" style="display:inline-block;background:#0f172a;color:#ffffff;padding:12px 22px;text-decoration:none;font-weight:600">Reset password</a></p>
+      <p style="color:#64748b;font-size:12px">This link expires in {auth_admin.RESET_TOKEN_TTL_MIN} minutes and can only be used once. If you didn't request a reset, ignore this email — your password will not be changed.</p>
+      <p style="color:#94a3b8;font-size:11px;word-break:break-all">Or copy this URL: {link}</p>
+    </td></tr>
+  </table>
+</body></html>
+"""
+    return subject, text, html
+
+
+def _send_reset_email(token: str) -> bool:
+    """Send the reset link to COMPANY_EMAIL via existing SMTP layer."""
+    from email_service import _send  # internal helper
+    subject, body, html = _build_reset_email(token)
+    return _send(to=[COMPANY_EMAIL], subject=subject, body_text=body, body_html=html)
+
+
+@api_router.post("/admin/forgot-password")
+@limiter.limit("3/15minutes")
+async def forgot_password(request: Request, payload: ForgotPasswordRequest, background: BackgroundTasks):
+    """Send a magic-link to COMPANY_EMAIL. Always returns 200 to avoid enumeration.
+
+    The supplied email is only used to gate the request — only mail to the
+    pre-configured COMPANY_EMAIL is actually sent.
+    """
+    if payload.email.lower() != COMPANY_EMAIL.lower():
+        # Pretend we sent, to avoid leaking which email is the admin.
+        logger.warning("Forgot-password attempted with non-admin email: %s", payload.email)
+        return {"sent": True}
+    if not smtp_is_configured():
+        raise HTTPException(
+            status_code=503,
+            detail="Email is not configured. Set SMTP_APP_PASSWORD in backend/.env to enable password reset.",
+        )
+    token = await auth_admin.create_reset_token(db)
+    background.add_task(_send_reset_email, token)
+    logger.info("Password reset link generated and queued for %s", COMPANY_EMAIL)
+    return {"sent": True}
+
+
+@api_router.get("/admin/reset-password/{token}")
+async def validate_reset(token: str):
+    rec = await auth_admin.validate_reset_token(db, token)
+    if not rec:
+        raise HTTPException(status_code=400, detail="This reset link is invalid or has expired.")
+    return {"valid": True, "expires_at": rec.get("expires_at").isoformat() if isinstance(rec.get("expires_at"), datetime) else rec.get("expires_at")}
+
+
+@api_router.post("/admin/reset-password")
+@limiter.limit("5/15minutes")
+async def reset_password(request: Request, payload: ResetPasswordRequest):
+    rec = await auth_admin.validate_reset_token(db, payload.token)
+    if not rec:
+        raise HTTPException(status_code=400, detail="This reset link is invalid or has expired.")
+    consumed = await auth_admin.consume_reset_token(db, payload.token)
+    if not consumed:
+        raise HTTPException(status_code=400, detail="This reset link has already been used.")
+    await auth_admin.set_admin_password(db, payload.new_password)
+    logger.info("Admin password was reset via magic link.")
+    return {"reset": True}
+
+
+@api_router.post("/admin/change-password")
+async def change_password(
+    payload: ChangePasswordRequest, _: bool = Depends(require_admin)
+):
+    ok = await auth_admin.verify_admin_password(db, payload.current_password)
+    if not ok:
+        raise HTTPException(status_code=401, detail="Current password is incorrect.")
+    if payload.current_password == payload.new_password:
+        raise HTTPException(status_code=400, detail="New password must differ from the current one.")
+    await auth_admin.set_admin_password(db, payload.new_password)
+    return {"changed": True}
 
 
 # ====================== ADMIN: LEADS ======================
@@ -796,6 +910,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    try:
+        await auth_admin.ensure_admin_seeded(db)
+        await auth_admin.ensure_reset_indexes(db)
+        logger.info("Admin auth bootstrapped (admin seeded, indexes ensured).")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Auth bootstrap failed: %s", e)
 
 
 @app.on_event("shutdown")

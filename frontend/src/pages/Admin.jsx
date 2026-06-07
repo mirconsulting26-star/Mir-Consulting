@@ -20,6 +20,7 @@ import {
     Eye,
     Save,
     Receipt,
+    KeyRound,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,8 +73,18 @@ import {
     createCaseStudy,
     updateCaseStudy,
     deleteCaseStudy,
+    forgotPassword,
+    changePassword,
 } from "@/lib/api";
 import InvoicesPanel from "@/pages/admin/InvoicesPanel";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const TOKEN_KEY = "mir_admin_token";
 
@@ -142,6 +153,7 @@ export default function Admin() {
 
 // -------------------------------------------------------------
 function LoginScreen({ password, setPassword, onLogin, loading }) {
+    const [forgotOpen, setForgotOpen] = React.useState(false);
     return (
         <div
             className="min-h-screen bg-mir-surface flex items-center justify-center px-6 grain-overlay relative"
@@ -176,7 +188,7 @@ function LoginScreen({ password, setPassword, onLogin, loading }) {
                     Restricted access. Enter the admin password to manage leads,
                     insights and case studies.
                 </p>
-                <div className="space-y-2 mb-6">
+                <div className="space-y-2 mb-3">
                     <Label
                         htmlFor="password"
                         className="text-xs uppercase tracking-[0.2em] text-mir-muted"
@@ -193,6 +205,16 @@ function LoginScreen({ password, setPassword, onLogin, loading }) {
                         className={`${inputCls} h-12`}
                     />
                 </div>
+                <div className="flex justify-end mb-6">
+                    <button
+                        type="button"
+                        onClick={() => setForgotOpen(true)}
+                        data-testid="admin-forgot-password-link"
+                        className="text-xs uppercase tracking-[0.2em] text-mir-blue hover:text-mir-midnight transition-colors"
+                    >
+                        Forgot password?
+                    </button>
+                </div>
                 <button
                     type="submit"
                     disabled={loading}
@@ -203,7 +225,108 @@ function LoginScreen({ password, setPassword, onLogin, loading }) {
                     Sign in
                 </button>
             </form>
+
+            <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
         </div>
+    );
+}
+
+function ForgotPasswordDialog({ open, onOpenChange }) {
+    const [email, setEmail] = React.useState("");
+    const [sending, setSending] = React.useState(false);
+    const [sent, setSent] = React.useState(false);
+
+    React.useEffect(() => {
+        if (open) {
+            setEmail("");
+            setSent(false);
+        }
+    }, [open]);
+
+    const submit = async (e) => {
+        e.preventDefault();
+        if (!email.trim()) return toast.error("Enter the admin email.");
+        setSending(true);
+        try {
+            await forgotPassword(email.trim());
+            setSent(true);
+        } catch (err) {
+            const msg = err?.response?.data?.detail || "Could not send reset email.";
+            if (err?.response?.status === 429) {
+                toast.error("Too many attempts. Wait a few minutes and try again.");
+            } else {
+                toast.error(typeof msg === "string" ? msg : "Could not send reset email.");
+            }
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                className="bg-white border-mir-border rounded-none max-w-md"
+                data-testid="admin-forgot-dialog"
+            >
+                <DialogHeader>
+                    <DialogTitle className="font-heading text-mir-text text-2xl font-light">
+                        {sent ? "Check your inbox" : "Reset your password"}
+                    </DialogTitle>
+                    <DialogDescription className="text-mir-muted">
+                        {sent
+                            ? "If that email matches the admin account, we just sent a reset link. It expires in 15 minutes and can only be used once."
+                            : "Enter the admin email. We'll send a one-time reset link there."}
+                    </DialogDescription>
+                </DialogHeader>
+
+                {!sent ? (
+                    <form onSubmit={submit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label className="text-xs uppercase tracking-[0.2em] text-mir-muted">
+                                Admin email
+                            </Label>
+                            <Input
+                                type="email"
+                                data-testid="admin-forgot-email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="you@example.com"
+                                className={`${inputCls} h-11`}
+                                autoFocus
+                            />
+                        </div>
+                        <DialogFooter className="gap-2">
+                            <button
+                                type="button"
+                                onClick={() => onOpenChange(false)}
+                                className={btnGhost}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={sending}
+                                data-testid="admin-forgot-submit"
+                                className={btnPrimary}
+                            >
+                                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                Send reset link
+                            </button>
+                        </DialogFooter>
+                    </form>
+                ) : (
+                    <DialogFooter>
+                        <button
+                            onClick={() => onOpenChange(false)}
+                            data-testid="admin-forgot-close"
+                            className={btnPrimary}
+                        >
+                            Got it
+                        </button>
+                    </DialogFooter>
+                )}
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -212,6 +335,7 @@ function Dashboard({ token, onLogout, onAuthExpired }) {
     const [stats, setStats] = React.useState(null);
     const [tab, setTab] = React.useState("leads");
     const [invoicePrefill, setInvoicePrefill] = React.useState(null);
+    const [changeOpen, setChangeOpen] = React.useState(false);
 
     const loadStats = React.useCallback(async () => {
         try {
@@ -260,6 +384,14 @@ function Dashboard({ token, onLogout, onAuthExpired }) {
                         >
                             View site
                         </Link>
+                        <button
+                            onClick={() => setChangeOpen(true)}
+                            data-testid="admin-change-password-button"
+                            className={btnGhost}
+                        >
+                            <KeyRound className="w-4 h-4" />
+                            Change password
+                        </button>
                         <button
                             onClick={onLogout}
                             data-testid="admin-logout-button"
@@ -343,6 +475,13 @@ function Dashboard({ token, onLogout, onAuthExpired }) {
                     </TabsContent>
                 </Tabs>
             </main>
+
+            <ChangePasswordDialog
+                open={changeOpen}
+                onOpenChange={setChangeOpen}
+                token={token}
+                onAuthExpired={onAuthExpired}
+            />
         </div>
     );
 }
@@ -1444,3 +1583,122 @@ function Field({ label, children }) {
         </div>
     );
 }
+
+// -------------------------------------------------------------
+function ChangePasswordDialog({ open, onOpenChange, token, onAuthExpired }) {
+    const [current, setCurrent] = React.useState("");
+    const [next, setNext] = React.useState("");
+    const [confirm, setConfirm] = React.useState("");
+    const [saving, setSaving] = React.useState(false);
+
+    React.useEffect(() => {
+        if (open) {
+            setCurrent("");
+            setNext("");
+            setConfirm("");
+        }
+    }, [open]);
+
+    const submit = async (e) => {
+        e.preventDefault();
+        if (!current) return toast.error("Enter your current password.");
+        if (next.length < 8) return toast.error("New password must be at least 8 characters.");
+        if (next !== confirm) return toast.error("Passwords do not match.");
+        if (next === current) return toast.error("New password must differ from the current one.");
+        setSaving(true);
+        try {
+            await changePassword(token, current, next);
+            toast.success("Password updated.");
+            onOpenChange(false);
+        } catch (err) {
+            if (err?.response?.status === 401 && err?.response?.data?.detail?.toLowerCase?.()?.includes("current")) {
+                toast.error("Current password is incorrect.");
+            } else if (err?.response?.status === 401) {
+                toast.error("Session expired. Please sign in again.");
+                onAuthExpired();
+            } else {
+                const msg = err?.response?.data?.detail || "Could not update password.";
+                toast.error(typeof msg === "string" ? msg : "Could not update password.");
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                className="bg-white border-mir-border rounded-none max-w-md"
+                data-testid="admin-change-password-dialog"
+            >
+                <DialogHeader>
+                    <DialogTitle className="font-heading text-mir-text text-2xl font-light">
+                        Change password
+                    </DialogTitle>
+                    <DialogDescription className="text-mir-muted">
+                        Pick a new strong password. Minimum 8 characters.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={submit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-[0.2em] text-mir-muted">
+                            Current password
+                        </Label>
+                        <Input
+                            type="password"
+                            data-testid="admin-change-current"
+                            value={current}
+                            onChange={(e) => setCurrent(e.target.value)}
+                            className={`${inputCls} h-11`}
+                            autoFocus
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-[0.2em] text-mir-muted">
+                            New password
+                        </Label>
+                        <Input
+                            type="password"
+                            data-testid="admin-change-new"
+                            value={next}
+                            onChange={(e) => setNext(e.target.value)}
+                            className={`${inputCls} h-11`}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-[0.2em] text-mir-muted">
+                            Confirm new password
+                        </Label>
+                        <Input
+                            type="password"
+                            data-testid="admin-change-confirm"
+                            value={confirm}
+                            onChange={(e) => setConfirm(e.target.value)}
+                            className={`${inputCls} h-11`}
+                        />
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <button
+                            type="button"
+                            onClick={() => onOpenChange(false)}
+                            className={btnGhost}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            data-testid="admin-change-submit"
+                            className={btnPrimary}
+                        >
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                            Update password
+                        </button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
