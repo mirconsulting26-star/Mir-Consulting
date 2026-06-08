@@ -996,14 +996,13 @@ async def stripe_webhook(request: Request):
     body = await request.body()
     sig = request.headers.get("Stripe-Signature", "")
     try:
-        client = stripe_service._client()
-        evt = await client.handle_webhook(body, sig)
+        evt = stripe_service.verify_webhook(body, sig)
     except Exception as e:
         logger.warning("Stripe webhook validation failed: %s", e)
         raise HTTPException(status_code=400, detail="Invalid signature")
     if evt.event_type in ("checkout.session.completed", "payment_intent.succeeded") and evt.payment_status == "paid":
         sid = evt.session_id
-        txn = await db.payment_transactions.find_one({"session_id": sid})
+        txn = await db.payment_transactions.find_one({"session_id": sid}) if sid else None
         if txn and txn.get("payment_status") != "paid":
             await db.invoices.update_one(
                 {"id": txn["invoice_id"], "status": {"$ne": "paid"}},
