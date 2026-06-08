@@ -220,12 +220,21 @@ class Invoice(BaseModel):
     lead_id: Optional[str] = None
     sent_at: Optional[str] = None
     paid_at: Optional[str] = None
+    # Customer-submitted payment confirmation (admin reviews then marks paid)
+    payment_method_chosen: Optional[Literal["bank", "paypal", "revolut", "contact"]] = None
+    payment_confirmation_reference: Optional[str] = None
+    payment_confirmation_note: Optional[str] = None
+    payment_confirmation_submitted_at: Optional[str] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
 
 
-class CheckoutSessionPayload(BaseModel):
-    origin_url: str
+class PaymentConfirmationPayload(BaseModel):
+    """Customer-submitted confirmation that they've paid via their chosen method."""
+    model_config = ConfigDict(extra="ignore")
+    method: Literal["bank", "paypal", "revolut", "contact"]
+    reference: Optional[str] = Field(default=None, max_length=200)
+    note: Optional[str] = Field(default=None, max_length=2000)
 
 
 # ---------------- Translation ----------------
@@ -237,5 +246,29 @@ class TranslatePayload(BaseModel):
 
 # ---------------- Site settings ----------------
 class SiteSettings(BaseModel):
+    """Branding + payment settings. The payment fields are PUBLIC by design — they're
+    shown to clients on the invoice page and PDF so they know how to pay."""
     model_config = ConfigDict(extra="ignore")
     logo_url: Optional[str] = Field(default=None, max_length=600)
+
+    # Bank transfer
+    bank_account_name: Optional[str] = Field(default=None, max_length=200)
+    bank_name: Optional[str] = Field(default=None, max_length=200)
+    bank_iban: Optional[str] = Field(default=None, max_length=80)
+    bank_swift_bic: Optional[str] = Field(default=None, max_length=40)
+    bank_account_number: Optional[str] = Field(default=None, max_length=80)
+    bank_routing_sort_code: Optional[str] = Field(default=None, max_length=40)
+    bank_address: Optional[str] = Field(default=None, max_length=400)
+    bank_reference_hint: Optional[str] = Field(default=None, max_length=200)
+
+    # PayPal
+    paypal_email: Optional[str] = Field(default=None, max_length=200)
+    paypal_me_url: Optional[str] = Field(default=None, max_length=400)
+
+    # Revolut
+    revolut_username: Optional[str] = Field(default=None, max_length=80)
+    revolut_link: Optional[str] = Field(default=None, max_length=400)
+
+    # Contact-us fallback
+    payment_contact_email: Optional[str] = Field(default=None, max_length=200)
+    payment_contact_message: Optional[str] = Field(default=None, max_length=600)

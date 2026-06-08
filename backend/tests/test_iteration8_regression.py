@@ -6,7 +6,7 @@ Covers:
 - POST /api/admin/login (rate-limited, JSON body, forward-ref fix)
 - admin guarded GETs (/stats, /leads, /posts, /case-studies, /team, /videos, /invoices, /email-status)
 - admin CRUD posts/case-studies/team/videos + slug uniqueness + YouTube id extraction
-- invoice create -> public token fetch -> Stripe checkout -> PDF download
+- invoice create -> public token fetch -> PDF download -> confirm-payment -> mark-paid
 - POST /api/admin/translate (de) via LiteLLM
 - media upload + fetch
 - POST /api/admin/forgot-password JSON body parsing
@@ -309,7 +309,7 @@ class TestVideosCRUD:
 
 # ----------------------- INVOICES -----------------------
 class TestInvoicesFullFlow:
-    def test_create_public_pdf_checkout(self, auth_headers):
+    def test_create_public_pdf_payment_flow(self, auth_headers):
         payload = {
             "client_name": f"TEST_Stripe Client {uuid.uuid4().hex[:6]}",
             "client_email": "client@example.com",
@@ -409,6 +409,12 @@ class TestMedia:
 
         r2 = requests.get(f"{BASE_URL}{body['url']}", timeout=30)
         assert r2.status_code == 200, f"media fetch failed: {r2.status_code}"
+        assert r2.content[:8] == b"\x89PNG\r\n\x1a\n", "Not a PNG body"
+
+    def test_upload_requires_auth(self, s):
+        r = s.post(f"{BASE_URL}/api/admin/media/upload")
+        assert r.status_code == 401
+h failed: {r2.status_code}"
         assert r2.content[:8] == b"\x89PNG\r\n\x1a\n", "Not a PNG body"
 
     def test_upload_requires_auth(self, s):

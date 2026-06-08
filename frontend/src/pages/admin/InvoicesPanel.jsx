@@ -13,6 +13,7 @@ import {
     X,
     Save,
     FileText,
+    CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +54,7 @@ import {
     downloadInvoicePdf,
     publicInvoiceUrl,
     fetchEmailStatus,
+    markInvoicePaid,
 } from "@/lib/api";
 
 const CURRENCIES = [
@@ -227,6 +229,18 @@ export default function InvoicesPanel({ token, onAuthExpired, onChange, prefillL
         toast.success("Public link copied to clipboard.");
     };
 
+    const onMarkPaid = async (inv) => {
+        try {
+            await markInvoicePaid(token, inv.id);
+            toast.success(`Invoice ${inv.number} marked as paid.`);
+            load();
+        } catch (e) {
+            if (e?.response?.status === 401) return onAuthExpired();
+            const msg = e?.response?.data?.detail || "Could not mark as paid.";
+            toast.error(typeof msg === "string" ? msg : "Could not mark as paid.");
+        }
+    };
+
     if (editing) {
         return (
             <InvoiceEditor
@@ -341,6 +355,15 @@ export default function InvoicesPanel({ token, onAuthExpired, onChange, prefillL
                                     >
                                         {inv.status}
                                     </Badge>
+                                    {inv.payment_confirmation_submitted_at && inv.status !== "paid" && (
+                                        <div
+                                            data-testid={`admin-invoice-confirmation-${inv.id}`}
+                                            className="mt-1.5 text-[10px] uppercase tracking-[0.18em] text-amber-700"
+                                            title={`Method: ${inv.payment_method_chosen || "—"}\nRef: ${inv.payment_confirmation_reference || "—"}\nNote: ${inv.payment_confirmation_note || "—"}`}
+                                        >
+                                            ⚑ confirmation submitted
+                                        </div>
+                                    )}
                                 </TableCell>
                                 <TableCell className="text-xs text-mir-muted">
                                     {inv.issue_date}
@@ -375,6 +398,16 @@ export default function InvoicesPanel({ token, onAuthExpired, onChange, prefillL
                                         >
                                             <LinkIcon className="w-3.5 h-3.5" />
                                         </button>
+                                        {inv.status !== "paid" && (
+                                            <button
+                                                onClick={() => onMarkPaid(inv)}
+                                                data-testid={`admin-invoice-mark-paid-${inv.id}`}
+                                                className={`${btnGhost} px-3 py-1.5 text-xs hover:border-emerald-400 hover:text-emerald-700`}
+                                                title="Mark as paid"
+                                            >
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => setEditing(inv)}
                                             data-testid={`admin-invoice-edit-${inv.id}`}

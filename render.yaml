@@ -44,10 +44,6 @@ services:
         sync: false                # owner/repo
       - key: GITHUB_BRANCH
         value: main
-      - key: STRIPE_API_KEY
-        sync: false                # sk_test_... or sk_live_...
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false                # whsec_... after you register the webhook
       - key: EMERGENT_LLM_KEY
         sync: false                # OR set OPENAI_API_KEY / GEMINI_API_KEY / ANTHROPIC_API_KEY
 

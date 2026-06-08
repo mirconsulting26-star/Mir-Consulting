@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 import os
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, FastAPI
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.cors import CORSMiddleware
@@ -51,12 +51,6 @@ api_router.include_router(admin_invoices.router)
 api_router.include_router(admin_media.router)
 api_router.include_router(admin_translate.router)
 app.include_router(api_router)
-
-
-# Stripe webhook — kept under /api but bypasses request-body parsing on the router level.
-@app.post("/api/webhook/stripe")
-async def stripe_webhook(request: Request):
-    return await admin_invoices.stripe_webhook_handler(request)
 
 
 # ====================== MIDDLEWARE ======================

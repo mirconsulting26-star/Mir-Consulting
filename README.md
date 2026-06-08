@@ -6,7 +6,7 @@ A production-grade marketing site & CMS for MIR Consulting, built with **React +
 
 - Marketing site (Home, About, Services, Industries, Our Work, Contact) with **i18n in English / German / Spanish**
 - **Admin portal** with full CMS for Insights / Case Studies, Team, YouTube Videos, Site Settings, Custom Logo, and Leads
-- **Invoice generation** with PDF + multi-currency + **Stripe Checkout**
+- **Invoice generation** with PDF + multi-currency + **manual payment confirmation** (Bank transfer / PayPal / Revolut / Contact-us). Customers submit a confirmation code after paying; admin verifies and marks paid in one click — no payment processor required.
 - **Lead capture** with **Gmail SMTP** notifications (no third-party email API)
 - **GitHub repository as media storage** (free CDN via raw.githubusercontent.com)
 - **LLM-powered CMS translation** for one-click EN ↔ DE ↔ ES content
@@ -17,7 +17,7 @@ A production-grade marketing site & CMS for MIR Consulting, built with **React +
 | Layer | Stack |
 | --- | --- |
 | Frontend | React 19, React Router, Tailwind, shadcn/ui, react-i18next, lucide-react |
-| Backend | FastAPI, Motor (async MongoDB), Pydantic v2, LiteLLM, Stripe SDK |
+| Backend | FastAPI, Motor (async MongoDB), Pydantic v2, LiteLLM |
 | Storage | MongoDB (data) + GitHub repo (media) |
 | Email | Gmail SMTP via `smtplib` |
 | Payments | Stripe Checkout |
@@ -77,7 +77,6 @@ MongoDB must be reachable via `MONGO_URL`. The admin portal lives at `/admin` (l
 | **MongoDB** | Primary database | Self-host, Atlas free tier, or any provider |
 | **Gmail App Password** | Lead notification emails | https://myaccount.google.com/apppasswords |
 | **GitHub PAT (Classic, repo scope)** | Media uploads to your repo | https://github.com/settings/tokens |
-| **Stripe Secret Key** | Invoice payment links | https://dashboard.stripe.com/apikeys |
 | **LLM Provider Key** *(optional)* | Auto-translate CMS | OpenAI / Anthropic / Gemini key via LiteLLM |
 
 ## Environment Variables
@@ -110,9 +109,8 @@ The app is fully portable. Pick the path that matches your host:
 ### Production checklist
 - [ ] Set `CORS_ORIGINS` on the backend to the exact frontend origin (not `*`).
 - [ ] Set `PUBLIC_BASE_URL` (backend) and `REACT_APP_SITE_URL` (frontend) to the live domain.
-- [ ] Replace `STRIPE_API_KEY=sk_test_emergent` (preview-only placeholder) with a real Stripe Secret Key.
 - [ ] If you use the AI translate feature, set one of `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` (LiteLLM picks the first one available).
-- [ ] Register the Stripe webhook → endpoint `https://<your-api>/api/webhook/stripe`, event `checkout.session.completed`. Paste the webhook secret into `STRIPE_WEBHOOK_SECRET`.
+- [ ] In the Admin → **Site Settings** tab, fill in your bank / PayPal / Revolut / contact details so clients see them on every invoice.
 - [ ] Regenerate `frontend/public/sitemap.xml` with your production domain.
 
 ## Tests

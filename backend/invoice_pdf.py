@@ -127,8 +127,13 @@ def _format_date(s: Optional[str]) -> str:
         return s
 
 
-def render_invoice_pdf(invoice: dict, *, company: Optional[dict] = None) -> bytes:
-    """Render an invoice dict to a PDF byte string."""
+def render_invoice_pdf(invoice: dict, *, company: Optional[dict] = None, payment_settings: Optional[dict] = None) -> bytes:
+    """Render an invoice dict to a PDF byte string.
+
+    `payment_settings` (optional) controls the "How to pay" block. Keys are matched
+    case-sensitively to those defined in `models.SiteSettings`. When None or empty,
+    the payment block is simply omitted.
+    """
     company = company or {
         "name": "MIR Consulting",
         "tagline": "Strategy · Technology · Intelligence",
@@ -297,6 +302,16 @@ def render_invoice_pdf(invoice: dict, *, company: Optional[dict] = None) -> byte
         for line in str(invoice["notes"]).splitlines():
             story.append(Paragraph(line or "&nbsp;", s["muted"]))
 
+    # Payment instructions (bank / paypal / revolut / contact)
+    pay_blocks = _build_payment_blocks(payment_settings or {}, s)
+    if pay_blocks:
+        story.append(Spacer(1, 22))
+        story.append(Paragraph("HOW TO PAY", s["labelCap"]))
+        story.append(Spacer(1, 6))
+        for block in pay_blocks:
+            story.append(block)
+            story.append(Spacer(1, 6))
+
     story.append(Spacer(1, 30))
     story.append(HRFlowable(width="100%", color=MIR_BORDER, thickness=0.4))
     story.append(Spacer(1, 8))
@@ -304,3 +319,53 @@ def render_invoice_pdf(invoice: dict, *, company: Optional[dict] = None) -> byte
 
     doc.build(story)
     return buf.getvalue()
+
+
+def _build_payment_blocks(ps: dict, s: dict) -> list:
+    """Build per-method payment instruction paragraphs from site_settings."""
+    blocks = []
+    bank_lines = []
+    if ps.get("bank_account_name"):
+        bank_lines.append(f"<b>Account name:</b> {ps['bank_account_name']}")
+    if ps.get("bank_name"):
+        bank_lines.append(f"<b>Bank:</b> {ps['bank_name']}")
+    if ps.get("bank_iban"):
+        bank_lines.append(f"<b>IBAN:</b> {ps['bank_iban']}")
+    if ps.get("bank_swift_bic"):
+        bank_lines.append(f"<b>SWIFT/BIC:</b> {ps['bank_swift_bic']}")
+    if ps.get("bank_account_number"):
+        bank_lines.append(f"<b>Account number:</b> {ps['bank_account_number']}")
+    if ps.get("bank_routing_sort_code"):
+        bank_lines.append(f"<b>Routing / Sort code:</b> {ps['bank_routing_sort_code']}")
+    if ps.get("bank_address"):
+        bank_lines.append(f"<b>Bank address:</b> {ps['bank_address']}")
+    if ps.get("bank_reference_hint"):
+        bank_lines.append(f"<b>Reference:</b> {ps['bank_reference_hint']}")
+    if bank_lines:
+        blocks.append(Paragraph("<b>Bank transfer</b><br/>" + "<br/>".join(bank_lines), s["muted"]))
+
+    if ps.get("paypal_email") or ps.get("paypal_me_url"):
+        pp = []
+        if ps.get("paypal_email"):
+            pp.append(f"<b>PayPal email:</b> {ps['paypal_email']}")
+        if ps.get("paypal_me_url"):
+            pp.append(f"<b>PayPal.Me:</b> {ps['paypal_me_url']}")
+        blocks.append(Paragraph("<b>PayPal</b><br/>" + "<br/>".join(pp), s["muted"]))
+
+    if ps.get("revolut_username") or ps.get("revolut_link"):
+        rv = []
+        if ps.get("revolut_username"):
+            rv.append(f"<b>Revtag:</b> @{ps['revolut_username'].lstrip('@')}")
+        if ps.get("revolut_link"):
+            rv.append(f"<b>Revolut link:</b> {ps['revolut_link']}")
+        blocks.append(Paragraph("<b>Revolut</b><br/>" + "<br/>".join(rv), s["muted"]))
+
+    if ps.get("payment_contact_email") or ps.get("payment_contact_message"):
+        contact = []
+        if ps.get("payment_contact_message"):
+            contact.append(ps["payment_contact_message"])
+        if ps.get("payment_contact_email"):
+            contact.append(f"Email: {ps['payment_contact_email']}")
+        blocks.append(Paragraph("<b>Contact us to arrange payment</b><br/>" + "<br/>".join(contact), s["muted"]))
+
+    return blocks

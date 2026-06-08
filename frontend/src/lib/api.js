@@ -230,16 +230,16 @@ export const downloadLeadsCsv = async (token) => {
     window.URL.revokeObjectURL(url);
 };
 
-// ====== PUBLIC INVOICE + STRIPE CHECKOUT ======
+// ====== PUBLIC INVOICE + MANUAL PAYMENT CONFIRMATION ======
 export const fetchPublicInvoice = (publicToken) =>
     api.get(`/invoices/public/${publicToken}`).then((r) => r.data);
-export const createInvoiceCheckout = (publicToken, originUrl) =>
+export const submitPaymentConfirmation = (publicToken, payload) =>
     api
-        .post(`/invoices/public/${publicToken}/checkout`, { origin_url: originUrl })
+        .post(`/invoices/public/${publicToken}/confirm-payment`, payload)
         .then((r) => r.data);
-export const invoiceCheckoutStatus = (publicToken, sessionId) =>
+export const markInvoicePaid = (token, id) =>
     api
-        .get(`/invoices/public/${publicToken}/checkout/${sessionId}`)
+        .post(`/admin/invoices/${id}/mark-paid`, {}, { headers: authHeader(token) })
         .then((r) => r.data);
 
 // ====== ADMIN: TRANSLATE ======

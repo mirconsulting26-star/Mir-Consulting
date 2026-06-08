@@ -1,12 +1,17 @@
-"""Invoices — admin CRUD, PDF, email, public token view + Stripe Checkout."""
+"""Invoices — admin CRUD, PDF, email, public token view + manual payment confirmation.
+
+Payment flow (Stripe-free):
+1. Admin creates and emails the invoice. Client receives PDF + public link.
+2. Client opens public link → sees bank / PayPal / Revolut details from site_settings.
+3. Client pays via their preferred method then submits a confirmation reference here.
+4. Admin reviews confirmation in the admin portal and clicks "Mark as Paid".
+"""
 import logging
-import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 
-import stripe_service
 from deps import (
     COMPANY_EMAIL,
     INVOICE_STATUSES,
@@ -18,10 +23,12 @@ from deps import (
 from email_service import is_configured as smtp_is_configured
 from email_service import send_invoice_email
 from invoice_pdf import fmt_money, render_invoice_pdf
-from models import CheckoutSessionPayload, Invoice, InvoiceCreate
+from models import Invoice, InvoiceCreate, PaymentConfirmationPayload
 
 logger = logging.getLogger(__name__)
 router = APIRouter()  # mixes /admin/invoices and /invoices/public paths
+
+SITE_SETTINGS_KEY = "site"
 
 _COMPANY = {
     "name": "MIR Consulting",
@@ -29,6 +36,13 @@ _COMPANY = {
     "email": COMPANY_EMAIL,
     "footer": "MIR Consulting — generated electronically. Valid without signature.",
 }
+
+
+async def _payment_settings() -> dict:
+    """Site-wide payment instructions used by PDF + public invoice page."""
+    doc = await db.site_settings.find_one({"key": SITE_SETTINGS_KEY}, {"_id": 0, "key": 0}) or {}
+    # Strip logo_url and any non-payment fields; PDF/PublicInvoice only need payment ones.
+    return {k: v for k, v in doc.items() if v and k != "logo_url"}
 
 
 async def _next_invoice_number() -> str:
@@ -167,12 +181,28 @@ async def delete_invoice(invoice_id: str, _: bool = Depends(require_admin)):
     return {"deleted": True}
 
 
+@router.post("/admin/invoices/{invoice_id}/mark-paid", response_model=Invoice)
+async def mark_invoice_paid(invoice_id: str, _: bool = Depends(require_admin)):
+    """One-click 'Mark as Paid' used by the admin after manually verifying payment."""
+    existing = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if existing.get("status") == "paid":
+        return existing
+    now = utc_now_iso()
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {"status": "paid", "paid_at": now, "updated_at": now}},
+    )
+    return await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+
+
 @router.get("/admin/invoices/{invoice_id}/pdf")
 async def download_invoice_pdf(invoice_id: str, _: bool = Depends(require_admin)):
     doc = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    pdf = render_invoice_pdf(doc, company=_COMPANY)
+    pdf = render_invoice_pdf(doc, company=_COMPANY, payment_settings=await _payment_settings())
     return Response(
         content=pdf,
         media_type="application/pdf",
@@ -192,7 +222,7 @@ async def send_invoice(invoice_id: str, _: bool = Depends(require_admin)):
             status_code=503,
             detail="Email is not configured. Add SMTP_USER and SMTP_APP_PASSWORD to backend/.env",
         )
-    pdf = render_invoice_pdf(doc, company=_COMPANY)
+    pdf = render_invoice_pdf(doc, company=_COMPANY, payment_settings=await _payment_settings())
     ok = send_invoice_email(
         recipient=doc["client_email"],
         invoice_number=doc["number"],
@@ -225,7 +255,7 @@ async def public_invoice_pdf(token: str):
     doc = await db.invoices.find_one({"public_token": token}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    pdf = render_invoice_pdf(doc, company=_COMPANY)
+    pdf = render_invoice_pdf(doc, company=_COMPANY, payment_settings=await _payment_settings())
     return Response(
         content=pdf,
         media_type="application/pdf",
@@ -233,107 +263,25 @@ async def public_invoice_pdf(token: str):
     )
 
 
-# -------------------- STRIPE CHECKOUT --------------------
-@router.post("/invoices/public/{token}/checkout")
-async def create_invoice_checkout(token: str, payload: CheckoutSessionPayload):
+@router.post("/invoices/public/{token}/confirm-payment", response_model=Invoice)
+async def submit_payment_confirmation(token: str, payload: PaymentConfirmationPayload):
+    """Client submits proof/reference that they've paid. Admin reviews and marks paid."""
     doc = await db.invoices.find_one({"public_token": token}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Invoice not found")
     if doc.get("status") == "paid":
-        raise HTTPException(status_code=400, detail="Invoice is already paid")
+        raise HTTPException(status_code=400, detail="Invoice is already marked as paid")
     if doc.get("status") == "void":
         raise HTTPException(status_code=400, detail="Invoice is void")
-    amount = float(doc.get("total", 0))
-    if amount <= 0:
-        raise HTTPException(status_code=400, detail="Invoice total is zero — nothing to charge")
-    origin = payload.origin_url.rstrip("/")
-    success_url = f"{origin}/invoice/{token}?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{origin}/invoice/{token}?payment=cancelled"
-    try:
-        session = await stripe_service.create_invoice_session(
-            invoice_number=doc["number"],
-            amount=amount,
-            currency=doc.get("currency", "USD"),
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata={"public_token": token, "invoice_id": doc["id"]},
-        )
-    except Exception as e:
-        logger.exception("Stripe checkout creation failed: %s", e)
-        raise HTTPException(status_code=502, detail=f"Stripe error: {e}")
-
-    await db.payment_transactions.insert_one({
-        "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
-        "invoice_id": doc["id"],
-        "invoice_number": doc["number"],
-        "public_token": token,
-        "amount": amount,
-        "currency": doc.get("currency", "USD"),
-        "payment_status": "initiated",
-        "status": "open",
-        "created_at": utc_now_iso(),
-        "updated_at": utc_now_iso(),
-    })
-    return {"url": session.url, "session_id": session.session_id}
-
-
-@router.get("/invoices/public/{token}/checkout/{session_id}")
-async def invoice_checkout_status(token: str, session_id: str):
-    doc = await db.invoices.find_one({"public_token": token}, {"_id": 0})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-    try:
-        status = await stripe_service.get_session_status(session_id)
-    except Exception as e:
-        logger.exception("Stripe status check failed: %s", e)
-        raise HTTPException(status_code=502, detail=f"Stripe error: {e}")
-
-    update = {
-        "status": status.status,
-        "payment_status": status.payment_status,
-        "updated_at": utc_now_iso(),
-    }
-    txn = await db.payment_transactions.find_one({"session_id": session_id})
-    if txn and txn.get("payment_status") != "paid" and status.payment_status == "paid":
-        await db.invoices.update_one(
-            {"public_token": token, "status": {"$ne": "paid"}},
-            {"$set": {"status": "paid", "paid_at": utc_now_iso(), "updated_at": utc_now_iso()}},
-        )
-    await db.payment_transactions.update_one(
-        {"session_id": session_id}, {"$set": update}
+    now = utc_now_iso()
+    await db.invoices.update_one(
+        {"public_token": token},
+        {"$set": {
+            "payment_method_chosen": payload.method,
+            "payment_confirmation_reference": (payload.reference or "").strip() or None,
+            "payment_confirmation_note": (payload.note or "").strip() or None,
+            "payment_confirmation_submitted_at": now,
+            "updated_at": now,
+        }},
     )
-    return {
-        "session_id": session_id,
-        "status": status.status,
-        "payment_status": status.payment_status,
-        "amount_total": status.amount_total,
-        "currency": status.currency,
-    }
-
-
-# -------------------- STRIPE WEBHOOK (NB: NOT under /api prefix in original; preserved) --------------------
-async def stripe_webhook_handler(request: Request):
-    body = await request.body()
-    sig = request.headers.get("Stripe-Signature", "")
-    try:
-        evt = stripe_service.verify_webhook(body, sig)
-    except Exception as e:
-        logger.warning("Stripe webhook validation failed: %s", e)
-        raise HTTPException(status_code=400, detail="Invalid signature")
-    if (
-        evt.event_type in ("checkout.session.completed", "payment_intent.succeeded")
-        and evt.payment_status == "paid"
-    ):
-        sid = evt.session_id
-        txn = await db.payment_transactions.find_one({"session_id": sid}) if sid else None
-        if txn and txn.get("payment_status") != "paid":
-            await db.invoices.update_one(
-                {"id": txn["invoice_id"], "status": {"$ne": "paid"}},
-                {"$set": {"status": "paid", "paid_at": utc_now_iso(), "updated_at": utc_now_iso()}},
-            )
-            await db.payment_transactions.update_one(
-                {"session_id": sid},
-                {"$set": {"payment_status": "paid", "status": "complete", "updated_at": utc_now_iso()}},
-            )
-    return {"received": True}
+    return await db.invoices.find_one({"public_token": token}, {"_id": 0})
