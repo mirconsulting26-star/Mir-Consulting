@@ -86,13 +86,34 @@ See [`backend/.env.example`](backend/.env.example) and [`frontend/.env.example`]
 
 ## Deployment
 
-The app is fully portable. Any of the following will work:
+The app is fully portable. Pick the path that matches your host:
 
-- **Frontend**: Vercel, Netlify, Cloudflare Pages, S3 + CloudFront
-- **Backend**: Fly.io, Railway, Render, AWS ECS / Lambda, plain VPS with `gunicorn -k uvicorn.workers.UvicornWorker`
-- **MongoDB**: Atlas, DigitalOcean Managed Mongo, or self-hosted
+### Option A — Render.com (one-click via Blueprint)
+1. Push this repo to GitHub.
+2. In Render dashboard → **Blueprints** → "New Blueprint Instance" → select this repo.
+3. Render reads [`render.yaml`](render.yaml) and provisions two services: `mir-consulting-api` (FastAPI) and `mir-consulting-web` (React static site).
+4. Fill in the env vars marked `sync: false` in the dashboard (Mongo URL, Stripe key, Gmail App Password, GitHub PAT, etc.).
+5. Hit Deploy. The frontend gets an SPA-rewrite rule so `/admin`, `/our-work/...` etc. all work.
 
-Set `CORS_ORIGINS` on the backend to your frontend's origin in production.
+### Option B — Heroku / Railway / Fly.io
+- Backend: the repo ships a [`Procfile`](Procfile) that boots uvicorn on `$PORT`. Just point the platform at the repo root.
+- Frontend: build with `cd frontend && yarn install --frozen-lockfile && yarn build`, then serve `frontend/build/` as a static site (Vercel, Netlify, Cloudflare Pages all work).
+
+### Option C — Docker / VPS / AWS ECS / GCP Cloud Run
+- Backend image:
+  ```bash
+  docker build -t mir-consulting-api -f backend/Dockerfile backend
+  docker run -p 8001:8001 --env-file backend/.env mir-consulting-api
+  ```
+- Frontend: `cd frontend && yarn build`, then serve `frontend/build/` via nginx / Caddy / S3+CloudFront.
+
+### Production checklist
+- [ ] Set `CORS_ORIGINS` on the backend to the exact frontend origin (not `*`).
+- [ ] Set `PUBLIC_BASE_URL` (backend) and `REACT_APP_SITE_URL` (frontend) to the live domain.
+- [ ] Replace `STRIPE_API_KEY=sk_test_emergent` (preview-only placeholder) with a real Stripe Secret Key.
+- [ ] If you use the AI translate feature, set one of `OPENAI_API_KEY` / `GEMINI_API_KEY` / `ANTHROPIC_API_KEY` (LiteLLM picks the first one available).
+- [ ] Register the Stripe webhook → endpoint `https://<your-api>/api/webhook/stripe`, event `checkout.session.completed`. Paste the webhook secret into `STRIPE_WEBHOOK_SECRET`.
+- [ ] Regenerate `frontend/public/sitemap.xml` with your production domain.
 
 ## Tests
 

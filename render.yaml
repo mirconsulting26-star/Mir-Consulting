@@ -1,0 +1,75 @@
+# Render.com one-click deploy blueprint for MIR Consulting.
+# Usage: log in to https://dashboard.render.com → "Blueprints" → connect this repo.
+# Render will create both services automatically; you'll just need to fill in
+# the environment variable values (or wire them to a Render env-group).
+
+services:
+  # ----- Backend (FastAPI on Python) -----
+  - type: web
+    name: mir-consulting-api
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MONGO_URL
+        sync: false                # set to your MongoDB connection string
+      - key: DB_NAME
+        value: mir_consulting
+      - key: CORS_ORIGINS
+        sync: false                # e.g. https://mirconsulting.com
+      - key: ADMIN_PASSWORD
+        generateValue: true        # bootstrap-only; live password is hashed in DB
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: COMPANY_EMAIL
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_APP_PASSWORD
+        sync: false                # Google App Password
+      - key: PUBLIC_BASE_URL
+        sync: false                # production https URL of the frontend
+      - key: GITHUB_TOKEN
+        sync: false                # PAT with Contents: Read+Write
+      - key: GITHUB_REPO
+        sync: false                # owner/repo
+      - key: GITHUB_BRANCH
+        value: main
+      - key: STRIPE_API_KEY
+        sync: false                # sk_test_... or sk_live_...
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false                # whsec_... after you register the webhook
+      - key: EMERGENT_LLM_KEY
+        sync: false                # OR set OPENAI_API_KEY / GEMINI_API_KEY / ANTHROPIC_API_KEY
+
+  # ----- Frontend (React static site) -----
+  - type: web
+    name: mir-consulting-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    staticPublishPath: ./build
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: REACT_APP_BACKEND_URL
+        sync: false                # https://mir-consulting-api.onrender.com
+      - key: REACT_APP_SITE_URL
+        sync: false                # https://mirconsulting.com
+      - key: ENABLE_HEALTH_CHECK
+        value: "false"
+    routes:
+      # SPA fallback so React Router deep links work
+      - type: rewrite
+        source: /*
+        destination: /index.html
