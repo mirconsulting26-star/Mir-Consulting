@@ -87,7 +87,6 @@ class TestStripeRemoved:
 PAYMENT_FIELDS = [
     "bank_account_name", "bank_name", "bank_iban", "bank_swift_bic",
     "bank_account_number", "bank_routing_sort_code", "bank_address",
-    "bank_reference_hint",
     "paypal_email", "paypal_me_url",
     "revolut_username", "revolut_link",
     "payment_contact_email", "payment_contact_message",
@@ -110,7 +109,6 @@ class TestSiteSettingsPaymentFields:
             "bank_name": "Test Bank",
             "bank_iban": f"DE00 0000 0000 0000 {suffix}",
             "bank_swift_bic": "TESTBIC",
-            "bank_reference_hint": "Please include invoice #",
             "paypal_email": f"pay-{suffix}@example.com",
             "paypal_me_url": f"https://paypal.me/test{suffix}",
             "revolut_username": f"@mir{suffix}",

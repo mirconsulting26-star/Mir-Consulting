@@ -1,98 +1,84 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# =================================================================
+# MIR Consulting — repo .gitignore
+# Anything that is environment-specific, generated, or contains
+# secrets/credentials goes here.
+# =================================================================
 
-# IDE and editors
-.idea/
-.vscode/
+# ----- Secrets / env -----
+.env
+.env.*
+*.env
+!*.env.example
+*.pem
+*.key
+credentials.json
+*credentials.json*
+*token.json*
+.credentials
 
-# Dependencies
+# ----- Dependencies -----
 node_modules/
-/node_modules
-/.pnp
+.pnp
 .pnp.js
 .yarn/install-state.gz
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-next-env.d.ts
-*.tsbuildinfo
-
-# Production builds
+# ----- Build output -----
 /build
+build/
 dist/
-dist
+.next/
+out/
 
-# Environment files (comprehensive coverage)
+# ----- Caches -----
+.cache/
+.parcel-cache/
+.eslintcache
+.npm
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-*token.json*
-*credentials.json*
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
 
-# Logs and debug files
+# ----- IDE / OS -----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ----- Logs -----
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# ----- Coverage -----
+/coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# ----- Agent / preview-only artifacts (safe to ignore on fresh repo) -----
+.emergent/
+test_reports/
+test_result.md
+design_guidelines.json
+memory/test_credentials.md
 dump.rdb
 
-# System files
-.DS_Store
-*.pem
-
-# Python
-__pycache__/
-*pyc*
-venv/
-.venv/
-
-# Development tools
-chainlit.md
-.chainlit
-.ipynb_checkpoints/
-.ac
-
-# Deployment
-.vercel
-
-# Data and databases
-agenthub/agents/youtube/db
-
-# Archive files and large assets
-**/*.zip
-**/*.tar.gz
-**/*.tar
-**/*.tgz
-*.pack
-*.deb
-*.dylib
-
-# Build caches
-.cache/
-
-memory/test_credentials.md
-
-# Mobile development
-android-sdk/frontend/node_modules/.cache/default-development/17.pack
-frontend/node_modules/.cache/default-development/17.pack
-frontend/node_modules/.cache/default-development/14.pack
-credentials.json
-*.key
-.credentials
-frontend/node_modules/.cache/default-development/8.pack
-.env
-.env.*
-*.env
-frontend/node_modules/.cache/default-development/9.pack
-frontend/node_modules/.cache/default-development/2.pack
-frontend/node_modules/.cache/default-development/11.pack
-frontend/node_modules/.cache/default-development/5.pack
-frontend/node_modules/.cache/default-development/6.pack
+# ----- Misc archives -----
+*.zip
+*.tar
+*.tar.gz
+*.tgz
 frontend/node_modules/.cache/default-development/0.pack
-frontend/node_modules/.cache/default-development/1.pack

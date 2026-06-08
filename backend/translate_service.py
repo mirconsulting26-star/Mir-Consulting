@@ -1,16 +1,13 @@
-"""LLM-based translation service using LiteLLM (portable, no Emergent dependency).
+"""LLM-based translation service using LiteLLM (portable, host-agnostic).
 
-LiteLLM is a thin wrapper that lets us call OpenAI, Anthropic, Gemini, or any
-other provider with the same API. The function picks the first provider whose
-API key is configured, so you can migrate between hosts just by changing the
-``.env`` keys.
+LiteLLM is a thin wrapper that lets us call OpenAI, Anthropic or Gemini with the
+same API. The function picks the first provider whose API key is configured, so
+you can switch providers by just swapping a key in ``.env``.
 
 Provider priority (first match wins):
     1. ``GEMINI_API_KEY``     → google's Gemini 2.5 Flash
     2. ``OPENAI_API_KEY``     → openai's gpt-4o-mini
     3. ``ANTHROPIC_API_KEY``  → anthropic's claude-3-5-haiku
-    4. ``EMERGENT_LLM_KEY``   → only used when running on the Emergent platform
-                                via the proxy gateway (``api.emergent.ai/llm``).
 """
 from __future__ import annotations
 
@@ -49,16 +46,9 @@ def _resolve_provider() -> dict:
         return {"model": "openai/gpt-4o-mini", "api_key": os.environ["OPENAI_API_KEY"]}
     if os.environ.get("ANTHROPIC_API_KEY"):
         return {"model": "anthropic/claude-3-5-haiku-latest", "api_key": os.environ["ANTHROPIC_API_KEY"]}
-    if os.environ.get("EMERGENT_LLM_KEY"):
-        # Emergent's universal-key gateway speaks the OpenAI protocol.
-        return {
-            "model": "openai/gpt-4o-mini",
-            "api_key": os.environ["EMERGENT_LLM_KEY"],
-            "api_base": "https://integrations.emergentagent.com/llm",
-        }
     raise RuntimeError(
         "No LLM provider key configured. Set one of: "
-        "GEMINI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, or EMERGENT_LLM_KEY."
+        "GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY."
     )
 
 

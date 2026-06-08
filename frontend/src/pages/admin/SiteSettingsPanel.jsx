@@ -13,7 +13,6 @@ const PAYMENT_FIELDS = [
     { key: "bank_account_number", label: "Account number", group: "bank", placeholder: "Optional (US/UK domestic)" },
     { key: "bank_routing_sort_code", label: "Routing / Sort code", group: "bank", placeholder: "Optional" },
     { key: "bank_address", label: "Bank address", group: "bank", placeholder: "Bank's registered address", textarea: true },
-    { key: "bank_reference_hint", label: "Reference to include", group: "bank", placeholder: "Invoice number" },
     // paypal
     { key: "paypal_email", label: "PayPal email", group: "paypal", placeholder: "you@example.com" },
     { key: "paypal_me_url", label: "PayPal.Me URL", group: "paypal", placeholder: "https://paypal.me/yourbusiness" },

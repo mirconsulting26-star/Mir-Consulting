@@ -339,8 +339,6 @@ def _build_payment_blocks(ps: dict, s: dict) -> list:
         bank_lines.append(f"<b>Routing / Sort code:</b> {ps['bank_routing_sort_code']}")
     if ps.get("bank_address"):
         bank_lines.append(f"<b>Bank address:</b> {ps['bank_address']}")
-    if ps.get("bank_reference_hint"):
-        bank_lines.append(f"<b>Reference:</b> {ps['bank_reference_hint']}")
     if bank_lines:
         blocks.append(Paragraph("<b>Bank transfer</b><br/>" + "<br/>".join(bank_lines), s["muted"]))
 

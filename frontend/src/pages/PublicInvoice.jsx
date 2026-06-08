@@ -392,11 +392,6 @@ export default function PublicInvoice() {
                                 <Detail label="Account #" value={ps.bank_account_number} />
                                 <Detail label="Routing / Sort" value={ps.bank_routing_sort_code} />
                                 <Detail label="Bank address" value={ps.bank_address} />
-                                {ps.bank_reference_hint && (
-                                    <p className="pt-2 text-xs text-mir-muted">
-                                        Reference to include: <span className="text-mir-text">{ps.bank_reference_hint}</span>
-                                    </p>
-                                )}
                             </MethodCard>
 
                             <MethodCard

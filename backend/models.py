@@ -259,7 +259,6 @@ class SiteSettings(BaseModel):
     bank_account_number: Optional[str] = Field(default=None, max_length=80)
     bank_routing_sort_code: Optional[str] = Field(default=None, max_length=40)
     bank_address: Optional[str] = Field(default=None, max_length=400)
-    bank_reference_hint: Optional[str] = Field(default=None, max_length=200)
 
     # PayPal
     paypal_email: Optional[str] = Field(default=None, max_length=200)
