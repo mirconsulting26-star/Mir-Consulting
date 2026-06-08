@@ -344,16 +344,23 @@ class TestInvoicesFullFlow:
         assert r3.content[:4] == b"%PDF", "PDF header missing"
         assert len(r3.content) > 1000
 
-        # Stripe checkout
+        # Manual payment confirmation flow (Stripe was removed)
         r4 = requests.post(
-            f"{BASE_URL}/api/invoices/public/{token}/checkout",
-            json={"origin_url": BASE_URL},
+            f"{BASE_URL}/api/invoices/public/{token}/confirm-payment",
+            json={"method": "bank", "reference": "TEST-REF-123", "note": "regression"},
         )
-        # Stripe sk_test_emergent goes through emergent proxy; iter7 confirmed 200
-        assert r4.status_code == 200, f"Stripe checkout failed: {r4.status_code} {r4.text}"
+        assert r4.status_code == 200, f"Confirm payment failed: {r4.status_code} {r4.text}"
         body = r4.json()
-        assert "url" in body and "stripe.com" in body["url"], f"bad checkout url: {body}"
-        assert body.get("session_id", "").startswith("cs_"), f"bad session_id: {body.get('session_id')}"
+        assert body.get("payment_method_chosen") == "bank"
+        assert body.get("payment_confirmation_reference") == "TEST-REF-123"
+
+        # Admin marks paid
+        r5 = requests.post(
+            f"{BASE_URL}/api/admin/invoices/{invoice_id}/mark-paid",
+            headers=auth_headers,
+        )
+        assert r5.status_code == 200, f"Mark-paid failed: {r5.status_code} {r5.text}"
+        assert r5.json().get("status") == "paid"
 
         # cleanup
         requests.delete(f"{BASE_URL}/api/admin/invoices/{invoice_id}", headers=auth_headers)
@@ -409,12 +416,6 @@ class TestMedia:
 
         r2 = requests.get(f"{BASE_URL}{body['url']}", timeout=30)
         assert r2.status_code == 200, f"media fetch failed: {r2.status_code}"
-        assert r2.content[:8] == b"\x89PNG\r\n\x1a\n", "Not a PNG body"
-
-    def test_upload_requires_auth(self, s):
-        r = s.post(f"{BASE_URL}/api/admin/media/upload")
-        assert r.status_code == 401
-h failed: {r2.status_code}"
         assert r2.content[:8] == b"\x89PNG\r\n\x1a\n", "Not a PNG body"
 
     def test_upload_requires_auth(self, s):
