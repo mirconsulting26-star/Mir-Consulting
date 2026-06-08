@@ -1,6 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
-import { Save, Landmark, Send, Mail } from "lucide-react";
+import { Save, Landmark, Send, Mail, Linkedin } from "lucide-react";
 import { fetchSiteSettings, updateSiteSettings } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 
@@ -35,14 +35,14 @@ const inputCls =
     "w-full bg-white border border-mir-border focus:outline-none focus:border-mir-blue px-3 py-2 text-sm text-mir-text rounded-none";
 
 export default function SiteSettingsPanel({ token, onAuthExpired }) {
-    const [form, setForm] = React.useState({ logo_url: "" });
+    const [form, setForm] = React.useState({ logo_url: "", linkedin_url: "" });
     const [loading, setLoading] = React.useState(true);
     const [saving, setSaving] = React.useState(false);
 
     React.useEffect(() => {
         fetchSiteSettings()
             .then((data) => {
-                const next = { logo_url: data.logo_url || "" };
+                const next = { logo_url: data.logo_url || "", linkedin_url: data.linkedin_url || "" };
                 PAYMENT_FIELDS.forEach((f) => {
                     next[f.key] = data[f.key] || "";
                 });
@@ -105,6 +105,32 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
                             onChange={(url) => setField("logo_url", url || "")}
                             testIdPrefix="logo"
                         />
+                    </section>
+
+                    {/* Social links */}
+                    <section className="space-y-3 border-b border-mir-border pb-8">
+                        <div className="flex items-center gap-2">
+                            <Linkedin className="w-4 h-4 text-mir-blue" />
+                            <label className="block text-xs uppercase tracking-[0.2em] text-mir-muted">
+                                Social links
+                            </label>
+                        </div>
+                        <p className="text-xs text-mir-muted">
+                            Public-facing profiles. Shown in the footer of every page.
+                        </p>
+                        <div>
+                            <label className="block text-[10px] uppercase tracking-[0.2em] text-mir-muted mb-1">
+                                LinkedIn URL
+                            </label>
+                            <input
+                                type="url"
+                                value={form.linkedin_url || ""}
+                                placeholder="https://www.linkedin.com/company/your-company"
+                                onChange={(e) => setField("linkedin_url", e.target.value)}
+                                data-testid="social-field-linkedin_url"
+                                className={inputCls}
+                            />
+                        </div>
                     </section>
 
                     {/* Payment settings */}

@@ -5,10 +5,14 @@ import { fetchSiteSettings } from "@/lib/api";
 
 export default function Footer() {
     const [logoUrl, setLogoUrl] = React.useState(null);
+    const [linkedinUrl, setLinkedinUrl] = React.useState(null);
 
     React.useEffect(() => {
         fetchSiteSettings()
-            .then((s) => setLogoUrl(s?.logo_url || null))
+            .then((s) => {
+                setLogoUrl(s?.logo_url || null);
+                setLinkedinUrl(s?.linkedin_url?.trim() || null);
+            })
             .catch(() => {});
     }, []);
 
@@ -172,11 +176,18 @@ export default function Footer() {
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         </Link>
                         <a
-                            href="https://www.linkedin.com"
-                            target="_blank"
+                            href={linkedinUrl || "#"}
+                            target={linkedinUrl ? "_blank" : undefined}
                             rel="noreferrer"
                             data-testid="footer-linkedin"
-                            className="mt-4 inline-flex items-center gap-2 text-white/65 hover:text-white transition-colors text-sm"
+                            onClick={(e) => { if (!linkedinUrl) e.preventDefault(); }}
+                            aria-disabled={!linkedinUrl}
+                            className={`mt-4 inline-flex items-center gap-2 transition-colors text-sm ${
+                                linkedinUrl
+                                    ? "text-white/65 hover:text-white"
+                                    : "text-white/30 cursor-not-allowed"
+                            }`}
+                            title={linkedinUrl || "LinkedIn link not set yet"}
                         >
                             <Linkedin className="w-4 h-4" />
                             LinkedIn

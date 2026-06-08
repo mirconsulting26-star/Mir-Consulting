@@ -271,3 +271,6 @@ class SiteSettings(BaseModel):
     # Contact-us fallback
     payment_contact_email: Optional[str] = Field(default=None, max_length=200)
     payment_contact_message: Optional[str] = Field(default=None, max_length=600)
+
+    # Social
+    linkedin_url: Optional[str] = Field(default=None, max_length=400)
