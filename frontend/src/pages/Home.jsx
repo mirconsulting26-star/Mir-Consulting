@@ -39,6 +39,18 @@ const WHY = [
 export default function Home() {
     return (
         <div data-testid="home-page" className="bg-mir-bg">
+            <Seo
+                path="/"
+                description="MIR Consulting delivers premium strategy, technology and intelligence services — building tailored automations, analytics and digital transformation programmes for enterprises across finance, energy, healthcare and the public sector."
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    name: "MIR Consulting",
+                    url: typeof window !== "undefined" ? window.location.origin : "",
+                    logo: "/og-cover.jpg",
+                    sameAs: [],
+                }}
+            />
             <Hero />
 
             <Section testId="trust-indicators-section" className="!py-16 border-t border-mir-border bg-mir-bg">

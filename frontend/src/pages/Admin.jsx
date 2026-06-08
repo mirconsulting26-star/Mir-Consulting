@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import Seo from "@/lib/Seo";
 import {
     Loader2,
     LogOut,
@@ -148,15 +149,25 @@ export default function Admin() {
     };
 
     if (!token) {
-        return <LoginScreen
-            password={password}
-            setPassword={setPassword}
-            onLogin={onLogin}
-            loading={loggingIn}
-        />;
+        return (
+            <>
+                <Seo title="Admin Sign In" path="/admin" noIndex />
+                <LoginScreen
+                    password={password}
+                    setPassword={setPassword}
+                    onLogin={onLogin}
+                    loading={loggingIn}
+                />
+            </>
+        );
     }
 
-    return <Dashboard token={token} onLogout={logout} onAuthExpired={logout} />;
+    return (
+        <>
+            <Seo title="Admin Dashboard" path="/admin" noIndex />
+            <Dashboard token={token} onLogout={logout} onAuthExpired={logout} />
+        </>
+    );
 }
 
 // -------------------------------------------------------------
