@@ -46,7 +46,7 @@ function IndustryCard({ ind, i, cfg }) {
         >
             {/* Image with zoom-on-hover */}
             <div
-                className="absolute inset-0 bg-cover bg-center scale-100 group-hover:scale-110 transition-transform duration-[1200ms] ease-out"
+                className="absolute inset-0 bg-cover bg-center scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out"
                 style={{ backgroundImage: `url(${image})` }}
             />
 
