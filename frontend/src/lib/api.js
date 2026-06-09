@@ -9,25 +9,20 @@ export const api = axios.create({
 });
 
 // ====== Global 401 interceptor (admin only) ======
-const TOKEN_KEY = "mir_admin_token";
+// Token is held only in React state (see /pages/Admin.jsx) — no localStorage.
+// On 401 from any admin route we simply route the user back to /admin; React
+// remounts the page with empty state, which renders the login screen.
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error?.response?.status;
         const config = error?.config || {};
         const url = (config.url || "").toString();
-        // Only auto-logout if the failing request was a /admin/* call.
         const isAdminRoute = url.includes("/admin/") && !url.includes("/admin/login");
         if (status === 401 && isAdminRoute && typeof window !== "undefined") {
-            try {
-                localStorage.removeItem(TOKEN_KEY);
-            } catch (_e) {
-                /* noop */
-            }
             if (!window.location.pathname.startsWith("/admin")) {
                 window.location.assign("/admin");
             } else {
-                // already on /admin — soft-reload so the login screen renders again
                 window.location.reload();
             }
         }

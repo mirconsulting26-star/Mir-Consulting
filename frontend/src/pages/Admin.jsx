@@ -4,14 +4,23 @@ import Seo from "@/lib/Seo";
 import { adminLogin } from "@/lib/api";
 import LoginScreen from "@/pages/admin/LoginScreen";
 import Dashboard from "@/pages/admin/Dashboard";
-import { TOKEN_KEY } from "@/pages/admin/_shared";
 
 export default function Admin() {
-    const [token, setToken] = React.useState(
-        () => localStorage.getItem(TOKEN_KEY) || ""
-    );
+    // Token lives only in React state — never persisted. This means:
+    //   • Navigating away from /admin (e.g. clicking "Back to site") clears the session.
+    //   • Refreshing the page logs you out.
+    //   • Closing the tab logs you out.
+    // Re-visiting /admin always shows the password screen.
+    const [token, setToken] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [loggingIn, setLoggingIn] = React.useState(false);
+
+    // One-time cleanup: wipe any legacy token left in localStorage by older builds.
+    React.useEffect(() => {
+        try {
+            window.localStorage.removeItem("mir_admin_token");
+        } catch (_e) { /* noop */ }
+    }, []);
 
     const onLogin = async (e) => {
         e.preventDefault();
@@ -19,7 +28,6 @@ export default function Admin() {
         setLoggingIn(true);
         try {
             const res = await adminLogin(password);
-            localStorage.setItem(TOKEN_KEY, res.token);
             setToken(res.token);
             toast.success("Welcome back.");
         } catch (err) {
@@ -29,10 +37,7 @@ export default function Admin() {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem(TOKEN_KEY);
-        setToken("");
-    };
+    const logout = () => setToken("");
 
     if (!token) {
         return (
