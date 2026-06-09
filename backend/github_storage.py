@@ -93,7 +93,35 @@ async def upload_file(folder: str, filename: str, file_bytes: bytes, content_typ
         r = await client.put(api_url, headers=_headers(token), json=payload)
     if r.status_code not in (200, 201):
         logger.error("GitHub upload failed %s %s: %s", r.status_code, path, r.text[:300])
-        raise RuntimeError(f"GitHub upload failed ({r.status_code})")
+        # Extract the actual GitHub message so the admin sees something actionable.
+        gh_msg = ""
+        try:
+            gh_msg = (r.json() or {}).get("message", "") or ""
+        except Exception:
+            gh_msg = r.text[:200]
+
+        if r.status_code == 401:
+            hint = "GITHUB_TOKEN is invalid or expired — generate a new fine-grained PAT."
+        elif r.status_code == 403:
+            hint = (
+                "Your PAT does not have permission to write to this repo. "
+                "Open GitHub → Settings → Developer settings → Personal access tokens → "
+                "your token → make sure 'Repository access' includes the repo and "
+                "'Repository permissions › Contents' is set to 'Read and write'."
+            )
+        elif r.status_code == 404:
+            hint = (
+                f"Repository '{repo}' or branch '{branch}' was not found. "
+                "Check GITHUB_REPO and GITHUB_BRANCH in your backend .env."
+            )
+        elif r.status_code == 422:
+            hint = "GitHub rejected the file (validation error). Try a different filename."
+        else:
+            hint = "Try again in a moment, or check the backend logs."
+
+        raise RuntimeError(
+            f"GitHub upload failed ({r.status_code}). {gh_msg}. {hint}".strip()
+        )
     return {"path": path, "url": f"/api/media/{path}"}
 
 

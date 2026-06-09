@@ -146,7 +146,10 @@ export default function RichEditor({
             if (status === 401) toast.error("Your session has expired — please sign in again.", { id: tId });
             else if (status === 503) toast.error("Image storage isn't configured. Use 'From URL' instead, or ask your admin to set GITHUB_TOKEN.", { id: tId });
             else if (status === 413) toast.error("File too large (max 8 MB).", { id: tId });
-            else if (status === 502) toast.error("Couldn't reach GitHub storage. Try again, or use 'From URL'.", { id: tId });
+            else if (status === 502) toast.error(
+                typeof detail === "string" && detail.length > 30 ? detail : "Couldn't reach GitHub storage. Try again, or use 'From URL'.",
+                { id: tId, duration: 12000 },
+            );
             else toast.error(typeof detail === "string" ? detail : "Upload failed — please try again.", { id: tId });
         } finally {
             setUploading(false);

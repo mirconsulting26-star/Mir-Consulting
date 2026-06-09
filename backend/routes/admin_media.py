@@ -43,7 +43,7 @@ async def upload_media(
         )
     except Exception as e:
         logger.exception("Media upload failed: %s", e)
-        raise HTTPException(status_code=502, detail="Upload to GitHub failed")
+        raise HTTPException(status_code=502, detail=str(e) or "Upload to GitHub failed")
 
 
 @router.get("/media/{path:path}")

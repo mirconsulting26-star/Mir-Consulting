@@ -65,7 +65,12 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
             } else if (status === 413) {
                 toast.error("File too large (max 8 MB).");
             } else if (status === 502) {
-                toast.error("Couldn't reach storage. Try again, or paste a URL instead.");
+                toast.error(
+                    typeof detail === "string" && detail.length > 30
+                        ? detail
+                        : "Couldn't reach storage. Try again, or paste a URL instead.",
+                    { duration: 12000 },
+                );
             } else {
                 toast.error(typeof detail === "string" ? detail : "Upload failed. Paste a URL instead.");
             }
