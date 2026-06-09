@@ -105,7 +105,7 @@ function SpotlightCard({ s, i }) {
                 <div className="md:col-span-7 lg:col-span-8">
                     <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-mir-blueSoft mb-5">
                         <Sparkles className="w-3.5 h-3.5" />
-                        Flagship practice · /0{i + 1}
+                        Our core practice · /0{i + 1}
                     </div>
                     <h3 className="font-heading text-3xl md:text-4xl lg:text-5xl font-medium leading-[1.05] tracking-tight">
                         {s.title}
@@ -122,7 +122,7 @@ function SpotlightCard({ s, i }) {
                         className="mt-8 inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-[0.18em] bg-white text-mir-midnight hover:bg-mir-blue hover:text-white transition-colors"
                         data-testid={`service-card-link-${s.slug}`}
                     >
-                        Explore the flagship
+                        Explore the practice
                         <ArrowUpRight className="w-4 h-4" />
                     </Link>
                 </div>
@@ -142,9 +142,10 @@ function SpotlightCard({ s, i }) {
 }
 
 export default function ServicesPreview() {
-    // Last service (Digital Transformation) becomes the spotlight.
-    const standard = SERVICES.slice(0, 6);
-    const spotlight = SERVICES[6];
+    // Business Consulting (first service) becomes the spotlight at the top —
+    // it's the firm's core identity. The remaining 6 services sit below as a balanced 3×2 grid.
+    const spotlight = SERVICES[0];
+    const standard = SERVICES.slice(1);
 
     return (
         <Section testId="services-preview-section" className="border-t border-mir-border bg-mir-bg">
@@ -177,19 +178,19 @@ export default function ServicesPreview() {
                 </div>
             </div>
 
-            {/* 3 × 2 grid of standard practice cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-                {standard.map((s, i) => (
-                    <StandardCard key={s.slug} s={s} i={i} />
-                ))}
-            </div>
-
-            {/* Spotlight card for the 7th service — fills the space that used to be empty */}
+            {/* Flagship spotlight — Business Consulting */}
             {spotlight && (
-                <div className="mt-6">
-                    <SpotlightCard s={spotlight} i={6} />
+                <div className="mb-6">
+                    <SpotlightCard s={spotlight} i={0} />
                 </div>
             )}
+
+            {/* 3 × 2 grid of remaining practice cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                {standard.map((s, i) => (
+                    <StandardCard key={s.slug} s={s} i={i + 1} />
+                ))}
+            </div>
         </Section>
     );
 }
