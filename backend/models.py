@@ -247,9 +247,12 @@ class TranslatePayload(BaseModel):
 # ---------------- Site settings ----------------
 class SiteSettings(BaseModel):
     """Branding + payment settings. The payment fields are PUBLIC by design — they're
-    shown to clients on the invoice page and PDF so they know how to pay."""
+    shown to clients on the invoice page and PDF so they know how to pay.
+
+    NOTE: Site logo and social links are NOT stored here anymore — they are
+    hard-coded in `frontend/src/config/branding.js`. Only payment-related
+    fields are managed at runtime via the admin portal."""
     model_config = ConfigDict(extra="ignore")
-    logo_url: Optional[str] = Field(default=None, max_length=600)
 
     # Bank transfer
     bank_account_name: Optional[str] = Field(default=None, max_length=200)
@@ -271,6 +274,3 @@ class SiteSettings(BaseModel):
     # Contact-us fallback
     payment_contact_email: Optional[str] = Field(default=None, max_length=200)
     payment_contact_message: Optional[str] = Field(default=None, max_length=600)
-
-    # Social
-    linkedin_url: Optional[str] = Field(default=None, max_length=400)

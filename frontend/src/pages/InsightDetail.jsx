@@ -37,7 +37,7 @@ export default function InsightDetail() {
             <Section testId="insight-not-found" className="bg-mir-bg">
                 <div className="text-center max-w-xl mx-auto">
                     <div className="text-[11px] uppercase tracking-[0.25em] text-mir-blue mb-4">
-                        Insight not found
+                        Article not found
                     </div>
                     <h1 className="font-heading text-4xl text-mir-text mb-6">
                         This article isn&apos;t available.
@@ -46,12 +46,12 @@ export default function InsightDetail() {
                         It may have been moved or is no longer published.
                     </p>
                     <Link
-                        to="/insights"
+                        to="/blog"
                         data-testid="insight-back-link"
                         className="inline-flex items-center gap-2 border border-mir-border hover:border-mir-blue px-6 py-3 text-sm text-mir-text"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to insights
+                        Back to blog
                     </Link>
                 </div>
             </Section>
@@ -63,7 +63,7 @@ export default function InsightDetail() {
             <Seo
                 title={post.title}
                 description={post.excerpt}
-                path={`/insights/${post.slug}`}
+                path={`/blog/${post.slug}`}
             />
 
             {post.cover_image && (
@@ -79,12 +79,12 @@ export default function InsightDetail() {
 
             <Section testId="insight-detail" className="bg-mir-bg !py-16 md:!py-24">
                 <Link
-                    to="/insights"
+                    to="/blog"
                     data-testid="insight-back-link"
                     className="inline-flex items-center gap-2 text-sm text-mir-muted hover:text-mir-text mb-10"
                 >
                     <ArrowLeft className="w-4 h-4" />
-                    All insights
+                    All articles
                 </Link>
 
                 <article className="max-w-3xl">
@@ -135,8 +135,8 @@ export default function InsightDetail() {
                 title="Want to discuss the ideas in this article?"
                 subtitle="Reach out — a senior MIR consultant will engage directly with your context."
                 ctaLabel="Start a conversation"
-                secondaryLabel="More insights"
-                secondaryTo="/insights"
+                secondaryLabel="More articles"
+                secondaryTo="/blog"
             />
         </div>
     );

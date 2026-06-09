@@ -114,7 +114,7 @@ export function PostsPanel({ token, onAuthExpired, onChange }) {
 
     return (
         <ContentList
-            title="Insights"
+            title="Blog"
             testIdPrefix="post"
             items={items}
             loading={loading}

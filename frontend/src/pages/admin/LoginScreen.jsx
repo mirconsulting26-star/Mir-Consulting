@@ -50,7 +50,7 @@ export default function LoginScreen({ password, setPassword, onLogin, loading })
                 </h1>
                 <p className="text-sm text-mir-muted mb-8">
                     Restricted access. Enter the admin password to manage leads,
-                    insights and case studies.
+                    blog and case studies.
                 </p>
                 <div className="space-y-2 mb-3">
                     <Label

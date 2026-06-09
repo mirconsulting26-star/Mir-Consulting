@@ -1,12 +1,13 @@
 import React from "react";
+import axios from "axios";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Loader2, Save, Sparkles } from "lucide-react";
+import { Loader2, Save, Sparkles, ImagePlus, Link as LinkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { adminTranslate } from "@/lib/api";
+import { adminTranslate, API } from "@/lib/api";
 import { btnGhost, btnPrimary, inputCls } from "./_shared";
 
 export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
@@ -21,6 +22,75 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
     const isEdit = !!initial.id;
 
     const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+    // --- Inline image insertion for the markdown content field ---
+    const contentRef = React.useRef(null);
+    const inlineFileRef = React.useRef(null);
+    const [inlineUploading, setInlineUploading] = React.useState(false);
+
+    const insertAtCursor = (snippet) => {
+        const ta = contentRef.current;
+        if (!ta) {
+            set("content", (form.content || "") + snippet);
+            return;
+        }
+        const start = ta.selectionStart ?? (form.content || "").length;
+        const end = ta.selectionEnd ?? start;
+        const current = form.content || "";
+        const next = current.slice(0, start) + snippet + current.slice(end);
+        set("content", next);
+        // restore cursor after React re-render
+        requestAnimationFrame(() => {
+            ta.focus();
+            const pos = start + snippet.length;
+            ta.setSelectionRange(pos, pos);
+        });
+    };
+
+    const onInlineImagePicked = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (!file) return;
+        setInlineUploading(true);
+        const tId = toast.loading("Uploading image…");
+        try {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("folder", isCS ? "case-studies" : "blog");
+            const res = await axios.post(`${API}/admin/media/upload`, fd, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const url = res.data.url.startsWith("http")
+                ? res.data.url
+                : `${process.env.REACT_APP_BACKEND_URL.replace(/\/$/, "")}${res.data.url}`;
+            const alt = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+            insertAtCursor(`\n\n![${alt}](${url})\n\n`);
+            toast.success("Image inserted at cursor.", { id: tId });
+        } catch (err) {
+            const status = err?.response?.status;
+            const detail = err?.response?.data?.detail;
+            if (status === 503) {
+                toast.error("Image storage not configured. Use 'Image URL' instead.", { id: tId });
+            } else if (status === 413) {
+                toast.error("File too large (max 8 MB).", { id: tId });
+            } else {
+                toast.error(detail || "Upload failed.", { id: tId });
+            }
+        } finally {
+            setInlineUploading(false);
+        }
+    };
+
+    const insertImageFromUrl = () => {
+        const url = window.prompt("Paste image URL (must start with https://)");
+        if (!url) return;
+        const trimmed = url.trim();
+        if (!/^https?:\/\//i.test(trimmed)) {
+            toast.error("URL must start with http:// or https://");
+            return;
+        }
+        insertAtCursor(`\n\n![](${trimmed})\n\n`);
+    };
 
     const translateAll = async (targetLang) => {
         if (translating) return;
@@ -260,12 +330,52 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                     )}
 
                     <Field label="Content * (Markdown)">
+                        <div
+                            className="flex flex-wrap items-center gap-2 mb-2"
+                            data-testid="post-content-toolbar"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => inlineFileRef.current?.click()}
+                                disabled={inlineUploading}
+                                data-testid="post-content-insert-image-upload"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs border border-mir-border bg-white text-mir-text hover:border-mir-blue disabled:opacity-50 transition-colors"
+                            >
+                                {inlineUploading ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <ImagePlus className="w-3.5 h-3.5" />
+                                )}
+                                Upload image
+                            </button>
+                            <button
+                                type="button"
+                                onClick={insertImageFromUrl}
+                                data-testid="post-content-insert-image-url"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 text-xs border border-mir-border bg-white text-mir-text hover:border-mir-blue transition-colors"
+                            >
+                                <LinkIcon className="w-3.5 h-3.5" />
+                                Image from URL
+                            </button>
+                            <span className="text-[11px] text-mir-muted">
+                                Place the cursor anywhere — image gets inserted there. Add as many as you want.
+                            </span>
+                            <input
+                                ref={inlineFileRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={onInlineImagePicked}
+                                data-testid="post-content-inline-file-input"
+                            />
+                        </div>
                         <Textarea
                             data-testid="admin-editor-content"
+                            ref={contentRef}
                             value={form.content}
                             onChange={(e) => set("content", e.target.value)}
                             rows={18}
-                            placeholder={"## Heading\n\nWrite your **content** here using markdown..."}
+                            placeholder={"## Heading\n\nWrite your **content** here using markdown.\n\nUse the toolbar above to insert images anywhere — top, middle, bottom, or in clusters.\n\n![alt text](https://example.com/photo.jpg)"}
                             className={`${inputCls} font-mono text-sm`}
                         />
                     </Field>
@@ -318,6 +428,7 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                                 prose-p:text-mir-textSoft prose-p:leading-relaxed
                                 prose-a:text-mir-blue
                                 prose-strong:text-mir-text
+                                prose-img:border prose-img:border-mir-border prose-img:my-6
                                 prose-code:text-mir-blueInk prose-code:bg-white prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none"
                         >
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>

@@ -1,6 +1,6 @@
 import React from "react";
 import "@/index.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -21,6 +21,13 @@ import AdminResetPassword from "@/pages/AdminResetPassword";
 import NotFound from "@/pages/NotFound";
 import PublicInvoice from "@/pages/PublicInvoice";
 
+// Redirect helper: preserves the `:slug` URL segment when moving old paths
+// (/insights/:slug) to the renamed routes (/blog/:slug).
+function SlugRedirect({ to }) {
+    const { slug } = useParams();
+    return <Navigate to={`${to}/${slug || ""}`} replace />;
+}
+
 function App() {
     return (
         <HelmetProvider>
@@ -37,10 +44,16 @@ function App() {
                                 path="/case-studies/:slug"
                                 element={<CaseStudyDetail />}
                             />
-                            <Route path="/insights" element={<Insights />} />
+                            <Route path="/blog" element={<Insights />} />
+                            <Route
+                                path="/blog/:slug"
+                                element={<InsightDetail />}
+                            />
+                            {/* legacy redirects from the "Insights" naming */}
+                            <Route path="/insights" element={<Navigate to="/blog" replace />} />
                             <Route
                                 path="/insights/:slug"
-                                element={<InsightDetail />}
+                                element={<SlugRedirect to="/blog" />}
                             />
                             <Route path="/our-work" element={<OurWork />} />
                             <Route path="/our-work/video/:slug" element={<VideoDetail />} />

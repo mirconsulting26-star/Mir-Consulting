@@ -1,8 +1,7 @@
 import React from "react";
 import { toast } from "sonner";
-import { Save, Landmark, Send, Mail, Linkedin } from "lucide-react";
+import { Save, Landmark, Send, Mail } from "lucide-react";
 import { fetchSiteSettings, updateSiteSettings } from "@/lib/api";
-import { MediaUpload } from "@/components/admin/MediaUpload";
 
 const PAYMENT_FIELDS = [
     // bank
@@ -35,14 +34,14 @@ const inputCls =
     "w-full bg-white border border-mir-border focus:outline-none focus:border-mir-blue px-3 py-2 text-sm text-mir-text rounded-none";
 
 export default function SiteSettingsPanel({ token, onAuthExpired }) {
-    const [form, setForm] = React.useState({ logo_url: "", linkedin_url: "" });
+    const [form, setForm] = React.useState({});
     const [loading, setLoading] = React.useState(true);
     const [saving, setSaving] = React.useState(false);
 
     React.useEffect(() => {
         fetchSiteSettings()
             .then((data) => {
-                const next = { logo_url: data.logo_url || "", linkedin_url: data.linkedin_url || "" };
+                const next = {};
                 PAYMENT_FIELDS.forEach((f) => {
                     next[f.key] = data[f.key] || "";
                 });
@@ -60,12 +59,10 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
     const save = async () => {
         setSaving(true);
         try {
-            // Send nulls for empty strings so backend stores clean data
             const payload = {};
             Object.entries(form).forEach(([k, v]) => {
                 payload[k] = typeof v === "string" && v.trim() === "" ? null : v;
             });
-            payload.logo_url = form.logo_url || "";
             await updateSiteSettings(token, payload);
             toast.success("Site settings saved.");
         } catch (e) {
@@ -81,7 +78,9 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
             <div>
                 <h2 className="font-heading text-2xl text-mir-text">Site Settings</h2>
                 <p className="text-sm text-mir-muted mt-1">
-                    Branding + the payment methods customers see on every invoice.
+                    Payment methods customers see on every invoice. Logo and
+                    social links are hard-coded in the codebase
+                    (<code className="text-xs bg-mir-surface px-1.5 py-0.5 border border-mir-border">src/config/branding.js</code>).
                 </p>
             </div>
 
@@ -89,51 +88,6 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
                 <div className="text-sm text-mir-muted">Loading…</div>
             ) : (
                 <>
-                    {/* Logo */}
-                    <section className="space-y-3 border-b border-mir-border pb-8">
-                        <label className="block text-xs uppercase tracking-[0.2em] text-mir-muted">
-                            Company logo
-                        </label>
-                        <p className="text-xs text-mir-muted">
-                            Square or wide PNG/SVG. Falls back to the &quot;M&quot; placeholder when empty.
-                        </p>
-                        <MediaUpload
-                            token={token}
-                            folder="logos"
-                            aspect="square"
-                            value={form.logo_url || null}
-                            onChange={(url) => setField("logo_url", url || "")}
-                            testIdPrefix="logo"
-                        />
-                    </section>
-
-                    {/* Social links */}
-                    <section className="space-y-3 border-b border-mir-border pb-8">
-                        <div className="flex items-center gap-2">
-                            <Linkedin className="w-4 h-4 text-mir-blue" />
-                            <label className="block text-xs uppercase tracking-[0.2em] text-mir-muted">
-                                Social links
-                            </label>
-                        </div>
-                        <p className="text-xs text-mir-muted">
-                            Public-facing profiles. Shown in the footer of every page.
-                        </p>
-                        <div>
-                            <label className="block text-[10px] uppercase tracking-[0.2em] text-mir-muted mb-1">
-                                LinkedIn URL
-                            </label>
-                            <input
-                                type="url"
-                                value={form.linkedin_url || ""}
-                                placeholder="https://www.linkedin.com/company/your-company"
-                                onChange={(e) => setField("linkedin_url", e.target.value)}
-                                data-testid="social-field-linkedin_url"
-                                className={inputCls}
-                            />
-                        </div>
-                    </section>
-
-                    {/* Payment settings */}
                     <div>
                         <h3 className="font-heading text-xl text-mir-text">Payment details</h3>
                         <p className="text-sm text-mir-muted mt-1 mb-6">

@@ -10,7 +10,7 @@ import { fetchWorks } from "@/lib/api";
 const TABS = [
     { key: "all", label: "All work" },
     { key: "case_study", label: "Case studies" },
-    { key: "insight", label: "Insights" },
+    { key: "insight", label: "Blog" },
     { key: "video", label: "Videos" },
 ];
 
@@ -147,7 +147,7 @@ export default function OurWork() {
                                     ? `/our-work/video/${item.slug}`
                                     : item.type === "case_study"
                                     ? `/case-studies/${item.slug}`
-                                    : `/insights/${item.slug}`;
+                                    : `/blog/${item.slug}`;
                             return (
                                 <motion.article
                                     key={`${item.type}-${item.slug || item.id || i}`}

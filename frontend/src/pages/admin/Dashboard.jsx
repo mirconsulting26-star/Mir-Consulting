@@ -105,7 +105,7 @@ export default function Dashboard({ token, onLogout, onAuthExpired }) {
                     <TabsList className="bg-white border border-mir-border rounded-none p-1 h-auto flex-wrap">
                         {[
                             { v: "leads", label: "Leads", icon: Inbox },
-                            { v: "insights", label: "Insights", icon: FileText },
+                            { v: "insights", label: "Blog", icon: FileText },
                             { v: "case-studies", label: "Case Studies", icon: Briefcase },
                             { v: "invoices", label: "Invoices", icon: Receipt },
                             { v: "videos", label: "Videos", icon: PlayCircle },

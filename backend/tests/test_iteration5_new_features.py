@@ -153,22 +153,23 @@ class TestSiteSettings:
     def test_get_public(self):
         r = requests.get(f"{API}/site-settings", timeout=10)
         assert r.status_code == 200
-        assert "logo_url" in r.json()
+        # Settings now only contain payment fields; logo & social are hard-coded in the FE.
+        assert "bank_iban" in r.json()
 
     def test_put_requires_auth(self):
-        r = requests.put(f"{API}/admin/site-settings", json={"logo_url": "https://x/y.png"}, timeout=10)
+        r = requests.put(f"{API}/admin/site-settings", json={"bank_iban": "GB00 TEST"}, timeout=10)
         assert r.status_code == 401
 
     def test_put_roundtrip(self, auth):
-        test_url = "https://example.com/test-logo.png"
-        r = requests.put(f"{API}/admin/site-settings", json={"logo_url": test_url}, headers=auth, timeout=10)
+        test_iban = "GB00 TEST 0000 0000 0000 00"
+        r = requests.put(f"{API}/admin/site-settings", json={"bank_iban": test_iban}, headers=auth, timeout=10)
         assert r.status_code == 200
-        assert r.json()["logo_url"] == test_url
+        assert r.json()["bank_iban"] == test_iban
         # public reflects it
         r = requests.get(f"{API}/site-settings", timeout=10)
-        assert r.json()["logo_url"] == test_url
+        assert r.json()["bank_iban"] == test_iban
         # reset to None to avoid polluting
-        requests.put(f"{API}/admin/site-settings", json={"logo_url": None}, headers=auth, timeout=10)
+        requests.put(f"{API}/admin/site-settings", json={"bank_iban": None}, headers=auth, timeout=10)
 
 
 # --- MEDIA UPLOAD (expected to fail with 502 due to read-only PAT) ---
@@ -191,8 +192,10 @@ class TestMediaUpload:
         files = {"file": ("logo.png", b"\x89PNG\r\n\x1a\n", "image/png")}
         data = {"folder": "logos"}
         r = requests.post(f"{API}/admin/media/upload", files=files, data=data, headers=auth, timeout=30)
-        # Accept either success or 502 — we document the actual state
-        assert r.status_code in (201, 502), f"Unexpected status: {r.status_code} {r.text}"
+        # Backend returns 200 on success. With a misconfigured/read-only PAT
+        # the GitHub PUT returns 4xx → backend forwards a 502. The frontend
+        # surfaces both 200 and 4xx/5xx cases.
+        assert r.status_code in (200, 201, 502), f"Unexpected status: {r.status_code} {r.text}"
 
 
 # --- LEADS CSV EXPORT ---

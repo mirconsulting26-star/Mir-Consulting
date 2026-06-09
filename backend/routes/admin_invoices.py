@@ -41,8 +41,11 @@ _COMPANY = {
 async def _payment_settings() -> dict:
     """Site-wide payment instructions used by PDF + public invoice page."""
     doc = await db.site_settings.find_one({"key": SITE_SETTINGS_KEY}, {"_id": 0, "key": 0}) or {}
-    # Strip logo_url and any non-payment fields; PDF/PublicInvoice only need payment ones.
-    return {k: v for k, v in doc.items() if v and k != "logo_url"}
+    # Drop legacy/non-payment fields. logo_url and linkedin_url are no longer
+    # admin-managed; they live in the frontend codebase. Old rows may still
+    # carry them — filter them out defensively.
+    _IGNORED = {"logo_url", "linkedin_url"}
+    return {k: v for k, v in doc.items() if v and k not in _IGNORED}
 
 
 async def _next_invoice_number() -> str:

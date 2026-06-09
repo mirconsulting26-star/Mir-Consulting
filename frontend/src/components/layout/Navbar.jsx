@@ -2,7 +2,7 @@ import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, X, ArrowUpRight, Globe, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { fetchSiteSettings } from "@/lib/api";
+import { LOGO_SRC } from "@/config/branding";
 
 const LANGUAGES = [
     { code: "en", label: "English", short: "EN" },
@@ -15,14 +15,7 @@ export default function Navbar() {
     const [open, setOpen] = React.useState(false);
     const [langOpen, setLangOpen] = React.useState(false);
     const [scrolled, setScrolled] = React.useState(false);
-    const [logoUrl, setLogoUrl] = React.useState(null);
     const langRef = React.useRef(null);
-
-    React.useEffect(() => {
-        fetchSiteSettings()
-            .then((s) => setLogoUrl(s?.logo_url || null))
-            .catch(() => {});
-    }, []);
 
     React.useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 8);
@@ -76,13 +69,12 @@ export default function Navbar() {
                     className="flex items-center gap-3 group"
                     onClick={() => setOpen(false)}
                 >
-                    {logoUrl ? (
+                    {LOGO_SRC ? (
                         <img
-                            src={logoUrl}
+                            src={LOGO_SRC}
                             alt="MIR Consulting"
                             data-testid="navbar-logo-img"
                             className="h-9 w-auto max-w-[140px] object-contain"
-                            onError={() => setLogoUrl(null)}
                         />
                     ) : (
                         <div

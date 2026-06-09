@@ -9,7 +9,8 @@ import {
     BarChart3,
     Cpu,
     Workflow,
-    Layers,
+    Megaphone,
+    ShoppingBag,
     Wand2,
 } from "lucide-react";
 
@@ -18,7 +19,8 @@ const ICONS = {
     "analytics-bi": BarChart3,
     "it-consulting": Cpu,
     "process-automation": Workflow,
-    "software-architecture": Layers,
+    "marketing-brand-growth": Megaphone,
+    "ecommerce-online-sales": ShoppingBag,
     "digital-transformation": Wand2,
 };
 
@@ -38,7 +40,7 @@ export default function ServicesPreview() {
                                 businesses.
                             </>
                         }
-                        subtitle="Six integrated practice areas — engineered to translate strategy, technology and data into measurable operating performance."
+                        subtitle="Seven integrated practice areas — engineered to translate strategy, technology, marketing and data into measurable operating performance."
                         testId="services-preview-header"
                     />
                 </div>
@@ -56,7 +58,7 @@ export default function ServicesPreview() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-mir-border border border-mir-border">
                 {SERVICES.map((s, i) => {
-                    const Icon = ICONS[s.slug] || Layers;
+                    const Icon = ICONS[s.slug] || LineChart;
                     return (
                         <motion.div
                             key={s.slug}

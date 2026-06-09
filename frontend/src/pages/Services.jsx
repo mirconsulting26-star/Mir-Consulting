@@ -13,7 +13,7 @@ export default function Services() {
             <Seo
                 title="Services"
                 path="/services"
-                description="Six integrated MIR Consulting practices: strategy, technology, data & analytics, automation, transformation and intelligence — delivered by senior-only engagement teams."
+                description="Seven integrated MIR Consulting practices: strategy, analytics, IT advisory, automation, marketing, e-commerce and digital transformation — delivered by senior-only engagement teams."
             />
             <Section testId="services-hero" className="relative grain-overlay bg-mir-bg">
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
@@ -23,7 +23,7 @@ export default function Services() {
                         Services
                     </div>
                     <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-light tracking-tighter leading-[1.05] max-w-5xl text-mir-text">
-                        Six integrated practices.
+                        Seven integrated practices.
                         <br />
                         <span className="text-mir-blue">One operating partner.</span>
                     </h1>

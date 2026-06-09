@@ -9,7 +9,7 @@ from deps import require_admin
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-ALLOWED_MEDIA_FOLDERS = ("team", "blog", "videos", "logos", "uploads")
+ALLOWED_MEDIA_FOLDERS = ("team", "blog", "case-studies", "videos", "logos", "uploads")
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB
 
 

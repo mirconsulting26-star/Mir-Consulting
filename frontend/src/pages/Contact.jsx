@@ -19,6 +19,8 @@ import Seo from "@/lib/Seo";
 const INDUSTRIES = [
     "Hospitality",
     "Retail / E-commerce",
+    "D2C Brands",
+    "Marketplace Sellers (Amazon / eBay / Etsy)",
     "Logistics",
     "Supply Chain",
     "Manufacturing",
@@ -32,7 +34,8 @@ const SERVICES = [
     "Analytics & Business Intelligence",
     "IT Consulting",
     "Process Automation",
-    "Software Architecture",
+    "Marketing & Brand Growth",
+    "E-commerce & Online Sales",
     "Digital Transformation",
     "Not sure yet",
 ];

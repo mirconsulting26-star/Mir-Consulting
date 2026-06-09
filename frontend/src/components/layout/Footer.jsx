@@ -1,21 +1,31 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Linkedin, ArrowUpRight } from "lucide-react";
-import { fetchSiteSettings } from "@/lib/api";
+import { Mail, MapPin, Linkedin, Facebook, ArrowUpRight } from "lucide-react";
+import { LOGO_SRC, SOCIAL_LINKS } from "@/config/branding";
+
+// X (formerly Twitter) — Lucide doesn't ship an X icon, so we render the
+// official wordmark glyph as an inline SVG sized like the others.
+function XIcon({ className = "" }) {
+    return (
+        <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className={className}
+            aria-hidden="true"
+        >
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.65l-5.214-6.817-5.965 6.817H1.69l7.73-8.83L1.25 2.25h6.815l4.713 6.231 5.466-6.231Zm-1.161 17.52h1.834L7.084 4.126H5.117l11.966 15.644Z" />
+        </svg>
+    );
+}
+
+const SOCIALS = [
+    { key: "linkedin", url: SOCIAL_LINKS.linkedin, Icon: Linkedin, label: "LinkedIn" },
+    { key: "facebook", url: SOCIAL_LINKS.facebook, Icon: Facebook, label: "Facebook" },
+    { key: "x", url: SOCIAL_LINKS.x, Icon: XIcon, label: "X" },
+];
 
 export default function Footer() {
-    const [logoUrl, setLogoUrl] = React.useState(null);
-    const [linkedinUrl, setLinkedinUrl] = React.useState(null);
-
-    React.useEffect(() => {
-        fetchSiteSettings()
-            .then((s) => {
-                setLogoUrl(s?.logo_url || null);
-                setLinkedinUrl(s?.linkedin_url?.trim() || null);
-            })
-            .catch(() => {});
-    }, []);
-
+    const visibleSocials = SOCIALS.filter((s) => !!s.url);
     return (
         <footer
             data-testid="site-footer"
@@ -28,13 +38,12 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
                     <div className="md:col-span-5">
                         <div className="flex items-center gap-3 mb-6">
-                            {logoUrl ? (
+                            {LOGO_SRC ? (
                                 <img
-                                    src={logoUrl}
+                                    src={LOGO_SRC}
                                     alt="MIR Consulting"
                                     data-testid="footer-logo-img"
                                     className="h-10 w-auto max-w-[160px] object-contain"
-                                    onError={() => setLogoUrl(null)}
                                 />
                             ) : (
                                 <div
@@ -78,6 +87,27 @@ export default function Footer() {
                                 Global remote · Engagements worldwide
                             </div>
                         </div>
+
+                        {visibleSocials.length > 0 && (
+                            <div
+                                className="mt-8 flex items-center gap-3"
+                                data-testid="footer-socials"
+                            >
+                                {visibleSocials.map(({ key, url, Icon, label }) => (
+                                    <a
+                                        key={key}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        aria-label={label}
+                                        data-testid={`footer-social-${key}`}
+                                        className="w-10 h-10 border border-white/15 flex items-center justify-center text-white/70 hover:text-white hover:border-mir-blueSoft transition-colors"
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                    </a>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="md:col-span-2">
@@ -141,7 +171,15 @@ export default function Footer() {
                                     to="/services"
                                     className="text-white/75 hover:text-white transition-colors"
                                 >
-                                    IT Consulting
+                                    Marketing &amp; Brand Growth
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    to="/services"
+                                    className="text-white/75 hover:text-white transition-colors"
+                                >
+                                    E-commerce &amp; Online Sales
                                 </Link>
                             </li>
                             <li>
@@ -175,23 +213,6 @@ export default function Footer() {
                             Book Consultation
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         </Link>
-                        <a
-                            href={linkedinUrl || "#"}
-                            target={linkedinUrl ? "_blank" : undefined}
-                            rel="noreferrer"
-                            data-testid="footer-linkedin"
-                            onClick={(e) => { if (!linkedinUrl) e.preventDefault(); }}
-                            aria-disabled={!linkedinUrl}
-                            className={`mt-4 inline-flex items-center gap-2 transition-colors text-sm ${
-                                linkedinUrl
-                                    ? "text-white/65 hover:text-white"
-                                    : "text-white/30 cursor-not-allowed"
-                            }`}
-                            title={linkedinUrl || "LinkedIn link not set yet"}
-                        >
-                            <Linkedin className="w-4 h-4" />
-                            LinkedIn
-                        </a>
                     </div>
                 </div>
 

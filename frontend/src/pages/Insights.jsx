@@ -33,25 +33,25 @@ export default function Insights() {
     return (
         <div data-testid="insights-page" className="bg-mir-bg">
             <Seo
-                title="Insights"
-                description="Senior perspectives from MIR Consulting on strategy, data, dashboards, automation and digital transformation."
-                path="/insights"
+                title="Blog"
+                description="The MIR Consulting blog — practical writing on strategy, marketing, analytics, e-commerce, automation and digital transformation for operators."
+                path="/blog"
             />
             <Section testId="insights-hero" className="relative grain-overlay bg-mir-bg">
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">
                     <div className="text-[11px] uppercase tracking-[0.25em] text-mir-blue mb-6">
-                        Insights
+                        Blog
                     </div>
                     <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-light tracking-tighter leading-[1.05] max-w-5xl text-mir-text">
-                        Perspectives from MIR Consulting on{" "}
-                        <span className="text-mir-blue">strategy, data and operations</span>.
+                        Practical writing on{" "}
+                        <span className="text-mir-blue">strategy, growth and operations</span>.
                     </h1>
                     <p className="mt-10 text-lg sm:text-xl text-mir-muted max-w-3xl leading-relaxed">
-                        Pragmatic, senior-authored writing on dashboards, automation,
-                        business intelligence, digital transformation and operational
-                        excellence — written for operators, not buzzword chasers.
+                        Pragmatic, senior-authored articles on marketing, e-commerce,
+                        analytics, automation and digital transformation — written for
+                        operators, not buzzword chasers.
                     </p>
                 </div>
             </Section>
@@ -129,7 +129,7 @@ export default function Insights() {
                                     {isFallback ? (
                                         inner
                                     ) : (
-                                        <Link to={`/insights/${post.slug}`} className="flex flex-col h-full">
+                                        <Link to={`/blog/${post.slug}`} className="flex flex-col h-full">
                                             {inner}
                                         </Link>
                                     )}
