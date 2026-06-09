@@ -5,6 +5,7 @@ import Hero from "@/components/sections/Hero";
 import ServicesPreview from "@/components/sections/ServicesPreview";
 import IndustriesPreview from "@/components/sections/IndustriesPreview";
 import CTASection from "@/components/sections/CTASection";
+import LeadMagnetSection from "@/components/sections/LeadMagnetSection";
 import { Section, SectionHeader, StatBlock } from "@/components/sections/Section";
 import { INDUSTRY_TAGS } from "@/lib/content";
 import { Link } from "react-router-dom";
@@ -165,6 +166,7 @@ export default function Home() {
             </Section>
 
             <ServicesPreview />
+            <LeadMagnetSection />
             <IndustriesPreview />
 
             <Section testId="why-mir-section" className="border-t border-mir-border bg-mir-bg">

@@ -3,6 +3,7 @@ import "@/index.css";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/sonner";
+import { SiteSettingsProvider } from "@/lib/SiteSettingsContext";
 
 import Layout from "@/components/layout/Layout";
 import Home from "@/pages/Home";
@@ -31,7 +32,8 @@ function SlugRedirect({ to }) {
 function App() {
     return (
         <HelmetProvider>
-            <div className="App bg-mir-bg text-mir-text min-h-screen">
+            <SiteSettingsProvider>
+                <div className="App bg-mir-bg text-mir-text min-h-screen">
                 <BrowserRouter>
                     <Routes>
                         <Route element={<Layout />}>
@@ -78,6 +80,7 @@ function App() {
                     }}
                 />
             </div>
+            </SiteSettingsProvider>
         </HelmetProvider>
     );
 }

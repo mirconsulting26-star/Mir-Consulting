@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Check } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
+import LeadMagnetSection from "@/components/sections/LeadMagnetSection";
 import Seo from "@/lib/Seo";
 import { SERVICES } from "@/lib/content";
 
@@ -156,6 +157,8 @@ export default function Services() {
                     ))}
                 </div>
             </Section>
+
+            <LeadMagnetSection />
 
             <CTASection
                 title="Need a sharper view of which practice fits?"

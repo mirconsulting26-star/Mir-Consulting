@@ -15,9 +15,9 @@ import Seo from "@/lib/Seo";
 import {
     API,
     fetchPublicInvoice,
-    fetchSiteSettings,
     submitPaymentConfirmation,
 } from "@/lib/api";
+import { useSiteSettings } from "@/lib/SiteSettingsContext";
 
 const fmt = (amount, currency) => {
     try {
@@ -100,7 +100,8 @@ function MethodCard({ id, label, icon: Icon, available, active, onClick, childre
 export default function PublicInvoice() {
     const { token } = useParams();
     const [invoice, setInvoice] = React.useState(null);
-    const [settings, setSettings] = React.useState(null);
+    const { settings: ctxSettings } = useSiteSettings();
+    const settings = ctxSettings || {};
     const [error, setError] = React.useState(null);
     const [selected, setSelected] = React.useState(null);
     const [reference, setReference] = React.useState("");
@@ -113,9 +114,6 @@ export default function PublicInvoice() {
             .catch((e) =>
                 setError(e?.response?.data?.detail || "Invoice not found."),
             );
-        fetchSiteSettings()
-            .then(setSettings)
-            .catch(() => setSettings({}));
     }, [token]);
 
     React.useEffect(() => {
