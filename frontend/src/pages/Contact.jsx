@@ -114,6 +114,15 @@ export default function Contact() {
                         Consulting partner will respond — usually within one business
                         day — with a structured next step.
                     </p>
+                    <div
+                        data-testid="contact-free-pill"
+                        className="mt-8 inline-flex items-center gap-2 border border-mir-blue/30 bg-mir-blue/5 px-4 py-2 text-xs sm:text-sm text-mir-text"
+                    >
+                        <span className="w-1.5 h-1.5 bg-mir-blue rounded-full animate-pulse-soft" />
+                        Your first 30-minute consultation is&nbsp;
+                        <span className="text-mir-blue font-medium">free</span>
+                        &nbsp;— no commitment, no payment details.
+                    </div>
                 </div>
             </Section>
 

@@ -1,11 +1,10 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
+import RichContent from "@/components/RichContent";
 import { fetchPost } from "@/lib/api";
 
 export default function InsightDetail() {
@@ -109,24 +108,11 @@ export default function InsightDetail() {
                         {post.read_time ? ` · ${post.read_time}` : ""}
                     </div>
                     <div className="divider-line-soft my-12" />
-                    <div
-                        className="prose prose-slate max-w-none
-                            prose-headings:font-heading prose-headings:tracking-tight prose-headings:text-mir-text
-                            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:font-light
-                            prose-h3:text-2xl prose-h3:mt-10 prose-h3:font-medium
-                            prose-p:text-mir-textSoft prose-p:leading-relaxed
-                            prose-a:text-mir-blue prose-a:no-underline hover:prose-a:underline
-                            prose-strong:text-mir-text
-                            prose-ul:text-mir-textSoft prose-ol:text-mir-textSoft
-                            prose-li:my-1
-                            prose-blockquote:border-l-mir-blue prose-blockquote:text-mir-text prose-blockquote:not-italic
-                            prose-code:text-mir-blueInk prose-code:bg-mir-surface prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none
-                            prose-img:border prose-img:border-mir-border"
-                        data-testid="insight-content"
-                    >
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {post.content}
-                        </ReactMarkdown>
+                    <div data-testid="insight-content">
+                        <RichContent
+                            html={post.content}
+                            className="prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:font-light prose-h3:text-2xl prose-h3:mt-10 prose-h3:font-medium prose-ul:text-mir-textSoft prose-ol:text-mir-textSoft prose-li:my-1 prose-a:no-underline hover:prose-a:underline"
+                        />
                     </div>
                 </article>
             </Section>

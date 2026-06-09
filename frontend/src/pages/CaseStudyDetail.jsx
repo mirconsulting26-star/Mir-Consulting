@@ -1,7 +1,6 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import ReactDOMPurified from "@/components/RichContent";
 import { ArrowLeft, Briefcase, CheckCircle2, Loader2 } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
@@ -125,24 +124,11 @@ export default function CaseStudyDetail() {
                     )}
 
                     <div className="divider-line-soft my-12" />
-                    <div
-                        className="prose prose-slate max-w-none
-                            prose-headings:font-heading prose-headings:tracking-tight prose-headings:text-mir-text
-                            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:font-light
-                            prose-h3:text-2xl prose-h3:mt-10 prose-h3:font-medium
-                            prose-p:text-mir-textSoft prose-p:leading-relaxed
-                            prose-a:text-mir-blue prose-a:no-underline hover:prose-a:underline
-                            prose-strong:text-mir-text
-                            prose-ul:text-mir-textSoft prose-ol:text-mir-textSoft
-                            prose-li:my-1
-                            prose-blockquote:border-l-mir-blue prose-blockquote:text-mir-text prose-blockquote:not-italic
-                            prose-code:text-mir-blueInk prose-code:bg-mir-surface prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none
-                            prose-img:border prose-img:border-mir-border"
-                        data-testid="case-study-content"
-                    >
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {cs.content}
-                        </ReactMarkdown>
+                    <div data-testid="case-study-content">
+                        <ReactDOMPurified
+                            html={cs.content}
+                            className="prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:font-light prose-h3:text-2xl prose-h3:mt-10 prose-h3:font-medium prose-ul:text-mir-textSoft prose-ol:text-mir-textSoft prose-li:my-1 prose-a:no-underline hover:prose-a:underline"
+                        />
                     </div>
                 </article>
             </Section>

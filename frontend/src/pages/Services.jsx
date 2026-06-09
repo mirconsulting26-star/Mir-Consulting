@@ -32,6 +32,15 @@ export default function Services() {
                         problem — from focused dashboard programs to full
                         operating-model transformation.
                     </p>
+                    <div
+                        data-testid="services-free-pill"
+                        className="mt-8 inline-flex items-center gap-2 border border-mir-blue/30 bg-mir-blue/5 px-4 py-2 text-xs sm:text-sm text-mir-text"
+                    >
+                        <span className="w-1.5 h-1.5 bg-mir-blue rounded-full animate-pulse-soft" />
+                        Not sure where to start?&nbsp;
+                        <span className="text-mir-blue font-medium">Your first call is free</span>
+                        &nbsp;— we&apos;ll help you scope it.
+                    </div>
                 </div>
             </Section>
 

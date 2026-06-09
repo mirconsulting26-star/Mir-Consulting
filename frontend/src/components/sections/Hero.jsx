@@ -79,7 +79,7 @@ export default function Hero() {
                             data-testid="hero-cta-primary"
                             className="group inline-flex items-center gap-3 bg-mir-midnight hover:bg-mir-blue text-white px-8 py-4 text-sm font-medium tracking-wide transition-colors"
                         >
-                            Book a Consultation
+                            Book a free consultation
                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         </Link>
                         <Link
@@ -90,6 +90,19 @@ export default function Hero() {
                             Explore Services
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.7, delay: 0.45 }}
+                        data-testid="hero-free-consult-note"
+                        className="mt-5 text-xs sm:text-sm text-mir-muted tracking-wide"
+                    >
+                        <span className="inline-flex items-center gap-2">
+                            <span className="w-1 h-1 bg-mir-blue rounded-full" />
+                            First 30-minute discovery call is on us — no commitment, no obligation.
+                        </span>
                     </motion.div>
                 </motion.div>
 
