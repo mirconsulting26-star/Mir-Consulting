@@ -213,6 +213,9 @@ export const deleteVideo = (token, id) =>
 export const updateSiteSettings = (token, payload) =>
     api.put("/admin/site-settings", payload, { headers: authHeader(token) }).then((r) => r.data);
 
+export const verifyGitHubStorage = (token) =>
+    api.get("/admin/media/verify-github", { headers: authHeader(token) }).then((r) => r.data);
+
 // ====== ADMIN: LEADS CSV EXPORT ======
 export const downloadLeadsCsv = async (token) => {
     const res = await api.get("/admin/leads-export.csv", {

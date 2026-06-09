@@ -46,6 +46,141 @@ def is_configured() -> bool:
     return bool(os.environ.get("GITHUB_TOKEN") and os.environ.get("GITHUB_REPO"))
 
 
+async def verify_config() -> dict:
+    """Diagnostic ping: check token + repo + branch + write permission without uploading a real file.
+
+    Returns a structured dict the admin UI can render. Never raises — every failure
+    is encoded in the response so the frontend can show the exact GitHub error.
+    """
+    token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPO")
+    branch = os.environ.get("GITHUB_BRANCH", DEFAULT_BRANCH)
+
+    result: dict = {
+        "ok": False,
+        "configured": bool(token and repo),
+        "repo": repo or None,
+        "branch": branch,
+        "token_present": bool(token),
+        "token_preview": (f"{token[:4]}…{token[-4:]}" if token and len(token) >= 10 else None),
+        "checks": [],
+    }
+
+    def _add(name: str, ok: bool, detail: str = "", hint: str = ""):
+        result["checks"].append({"name": name, "ok": ok, "detail": detail, "hint": hint})
+
+    if not token:
+        _add("Token configured", False, "GITHUB_TOKEN env var is missing.",
+             "Add GITHUB_TOKEN to your backend environment (Render → Environment).")
+    if not repo:
+        _add("Repo configured", False, "GITHUB_REPO env var is missing.",
+             "Set GITHUB_REPO to 'owner/repo-name' in your backend environment.")
+    if not token or not repo:
+        return result
+
+    headers = _headers(token)
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        # 1. Token validity + identity
+        try:
+            r = await client.get(f"{GITHUB_API}/user", headers=headers)
+        except Exception as e:  # noqa: BLE001
+            _add("Token reaches GitHub", False, f"Network error: {e}",
+                 "Backend host can't reach api.github.com — check outbound network.")
+            return result
+        if r.status_code == 401:
+            _add("Token is valid", False, "GitHub returned 401 Unauthorized.",
+                 "Token is invalid or expired. Generate a new fine-grained PAT.")
+            return result
+        if r.status_code == 403:
+            # Could be SSO not authorised, or rate-limit
+            msg = (r.json() or {}).get("message", "")
+            _add("Token is valid", False, f"403 Forbidden — {msg}",
+                 "If your org uses SSO, click 'Configure SSO' next to the token and authorise it for the org.")
+            return result
+        if r.status_code != 200:
+            _add("Token is valid", False, f"Unexpected HTTP {r.status_code} from /user.",
+                 "Generate a new token and retry.")
+            return result
+        login = (r.json() or {}).get("login", "?")
+        _add("Token is valid", True, f"Authenticated as @{login}")
+
+        # 2. Repo exists & token has access
+        repo_url = f"{GITHUB_API}/repos/{repo}"
+        rr = await client.get(repo_url, headers=headers)
+        if rr.status_code == 404:
+            _add("Repo accessible", False, f"Repo '{repo}' not found (404).",
+                 "Either the repo name is wrong, or your token is a fine-grained PAT that doesn't include this repo. "
+                 "Edit the token → 'Repository access' → add this repo.")
+            return result
+        if rr.status_code == 403:
+            msg = (rr.json() or {}).get("message", "")
+            _add("Repo accessible", False, f"403 Forbidden — {msg}",
+                 "Token can't see this repo. Add the repo under your PAT's 'Repository access'.")
+            return result
+        if rr.status_code != 200:
+            _add("Repo accessible", False, f"Unexpected HTTP {rr.status_code} reading repo.",
+                 "Check repo name and token permissions.")
+            return result
+        repo_data = rr.json() or {}
+        perms = repo_data.get("permissions") or {}
+        default_branch = repo_data.get("default_branch", "")
+        _add("Repo accessible", True,
+             f"Found {repo_data.get('full_name')} (default branch: {default_branch}, private: {repo_data.get('private')})")
+
+        # 3. Branch exists
+        br = await client.get(f"{GITHUB_API}/repos/{repo}/branches/{branch}", headers=headers)
+        if br.status_code == 404:
+            _add("Branch exists", False, f"Branch '{branch}' not found.",
+                 f"Set GITHUB_BRANCH to '{default_branch}' (the repo's default) or create the branch.")
+            return result
+        if br.status_code != 200:
+            _add("Branch exists", False, f"Unexpected HTTP {br.status_code} reading branch.",
+                 "Check GITHUB_BRANCH value.")
+            return result
+        _add("Branch exists", True, f"Branch '{branch}' is reachable.")
+
+        # 4. Write permission — check 'push' perm OR do a dry-run via creating then deleting a tiny probe file.
+        if perms and not perms.get("push", False):
+            _add("Write permission", False,
+                 "Token can read this repo but does NOT have push/write access.",
+                 "Fine-grained PAT → Repository permissions → set 'Contents' to 'Read and write'. "
+                 "Classic PAT → tick the 'repo' scope.")
+            return result
+
+        # Actually attempt a probe write + delete to be 100% sure.
+        probe_path = f"_diagnostics/probe-{uuid.uuid4().hex[:8]}.txt"
+        probe_api = f"{GITHUB_API}/repos/{repo}/contents/{probe_path}"
+        put_payload = {
+            "message": "mir: github connectivity probe",
+            "content": base64.b64encode(b"mir-probe").decode("ascii"),
+            "branch": branch,
+        }
+        pr = await client.put(probe_api, headers=headers, json=put_payload)
+        if pr.status_code not in (200, 201):
+            gh_msg = ""
+            try:
+                gh_msg = (pr.json() or {}).get("message", "") or ""
+            except Exception:
+                gh_msg = pr.text[:200]
+            _add("Write permission (live probe)", False,
+                 f"HTTP {pr.status_code}: {gh_msg}",
+                 "Token is missing write access. Fine-grained PAT → Repository permissions → 'Contents: Read and write'.")
+            return result
+
+        # Clean up the probe
+        sha = (pr.json() or {}).get("content", {}).get("sha")
+        if sha:
+            await client.request(
+                "DELETE", probe_api, headers=headers,
+                json={"message": "mir: cleanup probe", "sha": sha, "branch": branch},
+            )
+        _add("Write permission (live probe)", True,
+             "Successfully created and deleted a probe file — uploads will work.")
+
+    result["ok"] = all(c["ok"] for c in result["checks"])
+    return result
+
+
 def _headers(token: str) -> dict:
     return {
         "Authorization": f"Bearer {token}",

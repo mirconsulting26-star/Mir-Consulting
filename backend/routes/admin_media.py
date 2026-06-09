@@ -46,6 +46,12 @@ async def upload_media(
         raise HTTPException(status_code=502, detail=str(e) or "Upload to GitHub failed")
 
 
+@router.get("/admin/media/verify-github")
+async def verify_github_config(_: bool = Depends(require_admin)):
+    """One-click diagnostic — checks token, repo, branch, write access without uploading a real file."""
+    return await github_storage.verify_config()
+
+
 @router.get("/media/{path:path}")
 async def get_media(path: str):
     if not path or ".." in path:

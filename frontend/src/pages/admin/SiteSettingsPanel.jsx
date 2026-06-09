@@ -1,7 +1,7 @@
 import React from "react";
 import { toast } from "sonner";
-import { Save, Landmark, Send, Mail } from "lucide-react";
-import { fetchSiteSettings, updateSiteSettings } from "@/lib/api";
+import { Save, Landmark, Send, Mail, Github, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
+import { fetchSiteSettings, updateSiteSettings, verifyGitHubStorage } from "@/lib/api";
 
 const PAYMENT_FIELDS = [
     // bank
@@ -155,6 +155,8 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
                         </div>
                     </div>
 
+                    <GitHubDiagnostics token={token} onAuthExpired={onAuthExpired} />
+
                     <div className="pt-2">
                         <button
                             type="button"
@@ -167,6 +169,126 @@ export default function SiteSettingsPanel({ token, onAuthExpired }) {
                         </button>
                     </div>
                 </>
+            )}
+        </div>
+    );
+}
+
+function GitHubDiagnostics({ token, onAuthExpired }) {
+    const [running, setRunning] = React.useState(false);
+    const [result, setResult] = React.useState(null);
+
+    const run = async () => {
+        setRunning(true);
+        setResult(null);
+        try {
+            const data = await verifyGitHubStorage(token);
+            setResult(data);
+            if (data?.ok) toast.success("GitHub storage is healthy.");
+            else toast.error("GitHub storage has issues — see details below.");
+        } catch (e) {
+            if (e?.response?.status === 401) {
+                onAuthExpired?.();
+                return;
+            }
+            const detail = e?.response?.data?.detail || e?.message || "Verification failed.";
+            setResult({ ok: false, configured: false, checks: [{ name: "Request", ok: false, detail, hint: "" }] });
+            toast.error("Verification request failed.");
+        } finally {
+            setRunning(false);
+        }
+    };
+
+    return (
+        <div data-testid="github-diagnostics" className="border border-mir-border p-6 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+                <Github className="w-4 h-4 text-mir-blue" />
+                <h4 className="font-heading text-base text-mir-text">GitHub media storage</h4>
+            </div>
+            <p className="text-xs text-mir-muted mb-4">
+                Uploaded images (team photos, blog covers, video thumbnails) are pushed to your private
+                GitHub repo via the API. If uploads fail in production, run this diagnostic — it tells
+                you exactly which step is broken without you having to upload a real file.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3">
+                <button
+                    type="button"
+                    onClick={run}
+                    disabled={running}
+                    data-testid="verify-github-btn"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs uppercase tracking-[0.15em] border border-mir-midnight text-mir-midnight hover:bg-mir-midnight hover:text-white disabled:opacity-50 transition-colors"
+                >
+                    {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Github className="w-3.5 h-3.5" />}
+                    {running ? "Verifying…" : "Verify GitHub connection"}
+                </button>
+                {result && (
+                    <span
+                        data-testid="verify-github-status"
+                        className={`inline-flex items-center gap-1.5 text-xs ${result.ok ? "text-green-700" : "text-red-700"
+                            }`}
+                    >
+                        {result.ok ? (
+                            <>
+                                <CheckCircle2 className="w-4 h-4" /> All checks passed
+                            </>
+                        ) : (
+                            <>
+                                <XCircle className="w-4 h-4" /> Issues detected
+                            </>
+                        )}
+                    </span>
+                )}
+            </div>
+
+            {result && (
+                <div className="mt-5 space-y-3" data-testid="verify-github-results">
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-mir-muted grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <span className="text-mir-text">Repo:</span>{" "}
+                            <code className="text-xs text-mir-text">{result.repo || "—"}</code>
+                        </div>
+                        <div>
+                            <span className="text-mir-text">Branch:</span>{" "}
+                            <code className="text-xs text-mir-text">{result.branch || "—"}</code>
+                        </div>
+                        <div>
+                            <span className="text-mir-text">Token:</span>{" "}
+                            <code className="text-xs text-mir-text">{result.token_preview || (result.token_present ? "set" : "missing")}</code>
+                        </div>
+                    </div>
+
+                    <ul className="space-y-2">
+                        {(result.checks || []).map((c, i) => (
+                            <li
+                                key={i}
+                                data-testid={`verify-check-${i}`}
+                                className={`border p-3 text-sm ${c.ok ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                                    }`}
+                            >
+                                <div className="flex items-start gap-2">
+                                    {c.ok ? (
+                                        <CheckCircle2 className="w-4 h-4 text-green-700 mt-0.5 flex-shrink-0" />
+                                    ) : (
+                                        <XCircle className="w-4 h-4 text-red-700 mt-0.5 flex-shrink-0" />
+                                    )}
+                                    <div className="flex-1">
+                                        <div className="font-medium text-mir-text">{c.name}</div>
+                                        {c.detail && (
+                                            <div className="text-xs text-mir-muted mt-0.5 break-words">{c.detail}</div>
+                                        )}
+                                        {!c.ok && c.hint && (
+                                            <div className="mt-2 flex items-start gap-1.5 text-xs text-mir-text">
+                                                <AlertCircle className="w-3.5 h-3.5 text-mir-blue mt-0.5 flex-shrink-0" />
+                                                <span>{c.hint}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </div>
     );
