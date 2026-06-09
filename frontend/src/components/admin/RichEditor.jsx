@@ -19,8 +19,8 @@ import {
     Minus,
     Link as LinkIcon,
     Link2Off,
-    ImagePlus,
-    Image as ImageUrlIcon,
+    Upload,
+    Globe,
     AlignLeft,
     AlignCenter,
     AlignRight,
@@ -108,6 +108,20 @@ export default function RichEditor({
         const file = e.target.files?.[0];
         e.target.value = "";
         if (!file || !editor) return;
+        // Up-front, friendly validation — surfaces problems immediately instead
+        // of waiting for the backend to reject.
+        if (!/^image\//.test(file.type || "")) {
+            toast.error("Please choose an image file (jpg, png, gif, webp…).");
+            return;
+        }
+        const MAX = 8 * 1024 * 1024;
+        if (file.size > MAX) {
+            toast.error(
+                `That image is ${(file.size / (1024 * 1024)).toFixed(1)} MB — please upload one under 8 MB. ` +
+                    "Tip: most phones can export at a smaller size, or use a free tool like squoosh.app.",
+            );
+            return;
+        }
         setUploading(true);
         const tId = toast.loading("Uploading image…");
         try {
@@ -116,6 +130,8 @@ export default function RichEditor({
             fd.append("folder", folder);
             const res = await axios.post(`${API}/admin/media/upload`, fd, {
                 headers: { Authorization: `Bearer ${token}` },
+                // Don't let proxies time us out silently on big-ish phone photos.
+                timeout: 60_000,
             });
             const url = res.data.url.startsWith("http")
                 ? res.data.url
@@ -126,9 +142,12 @@ export default function RichEditor({
         } catch (err) {
             const status = err?.response?.status;
             const detail = err?.response?.data?.detail;
-            if (status === 503) toast.error("Image storage not configured. Use 'Image from URL' instead.", { id: tId });
+            console.error("[RichEditor] upload failed", status, detail, err);
+            if (status === 401) toast.error("Your session has expired — please sign in again.", { id: tId });
+            else if (status === 503) toast.error("Image storage isn't configured. Use 'From URL' instead, or ask your admin to set GITHUB_TOKEN.", { id: tId });
             else if (status === 413) toast.error("File too large (max 8 MB).", { id: tId });
-            else toast.error(detail || "Upload failed.", { id: tId });
+            else if (status === 502) toast.error("Couldn't reach GitHub storage. Try again, or use 'From URL'.", { id: tId });
+            else toast.error(typeof detail === "string" ? detail : "Upload failed — please try again.", { id: tId });
         } finally {
             setUploading(false);
         }
@@ -306,28 +325,41 @@ export default function RichEditor({
                 <ToolGroup>
                     <button
                         type="button"
-                        title="Upload image"
+                        title="Upload an image from your computer (max 8 MB)"
                         onClick={() => fileRef.current?.click()}
                         disabled={uploading}
-                        className={btnBase}
+                        className="inline-flex items-center justify-center gap-1.5 h-8 px-2.5 text-xs font-medium text-mir-text border border-transparent hover:border-mir-border whitespace-nowrap transition-colors disabled:opacity-60"
                         data-testid={`${testId}-img-upload`}
                     >
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                        {uploading ? (
+                            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                        ) : (
+                            <Upload className="w-4 h-4 shrink-0" />
+                        )}
+                        <span className="hidden sm:inline">Upload image</span>
                     </button>
                     <button
                         type="button"
-                        title="Image from URL"
+                        title="Insert an image from a public URL"
                         onClick={insertImageFromUrl}
-                        className={btnBase}
+                        className="inline-flex items-center justify-center gap-1.5 h-8 px-2.5 text-xs font-medium text-mir-text border border-transparent hover:border-mir-border whitespace-nowrap transition-colors"
                         data-testid={`${testId}-img-url`}
                     >
-                        <ImageUrlIcon className="w-4 h-4" />
+                        <Globe className="w-4 h-4 shrink-0" />
+                        <span className="hidden sm:inline">From URL</span>
                     </button>
                     <input
                         ref={fileRef}
                         type="file"
                         accept="image/*"
-                        className="hidden"
+                        // Use absolute-positioning + opacity:0 instead of
+                        // `display:none` — some browsers (Safari, older mobile)
+                        // refuse to open the file picker for a display:none input
+                        // when .click() is called from a button handler.
+                        className="sr-only"
+                        style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+                        tabIndex={-1}
+                        aria-hidden="true"
                         onChange={onImagePicked}
                         data-testid={`${testId}-img-file-input`}
                     />
@@ -391,6 +423,16 @@ export default function RichEditor({
 
             <div className="p-5" style={{ minHeight }}>
                 <EditorContent editor={editor} />
+            </div>
+            <div className="px-5 py-2 text-[11px] text-mir-muted border-t border-mir-border bg-mir-surface/40 flex flex-wrap items-center gap-x-4 gap-y-1">
+                <span>
+                    <strong className="font-medium text-mir-text">Upload image:</strong>{" "}
+                    jpg / png / webp / gif, <strong>max 8 MB</strong>.
+                </span>
+                <span>
+                    <strong className="font-medium text-mir-text">From URL:</strong>{" "}
+                    paste a public <code>https://…</code> image link.
+                </span>
             </div>
         </div>
     );

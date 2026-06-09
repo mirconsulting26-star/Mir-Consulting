@@ -28,6 +28,17 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
         const file = e.target.files?.[0];
         e.target.value = "";
         if (!file) return;
+        if (!/^image\//.test(file.type || "")) {
+            toast.error("Please choose an image file (jpg, png, gif, webp…).");
+            return;
+        }
+        const MAX = 8 * 1024 * 1024;
+        if (file.size > MAX) {
+            toast.error(
+                `That image is ${(file.size / (1024 * 1024)).toFixed(1)} MB — please upload one under 8 MB.`,
+            );
+            return;
+        }
         setUploading(true);
         try {
             const fd = new FormData();
@@ -35,6 +46,7 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
             fd.append("folder", folder);
             const res = await axios.post(`${API}/admin/media/upload`, fd, {
                 headers: { Authorization: `Bearer ${token}` },
+                timeout: 60_000,
             });
             // backend returns { path, url }. url is already /api/media/<path>
             const fullUrl = res.data.url.startsWith("http")
@@ -45,12 +57,17 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
         } catch (err) {
             const status = err?.response?.status;
             const detail = err?.response?.data?.detail;
-            if (status === 503) {
+            console.error("[MediaUpload] upload failed", status, detail, err);
+            if (status === 401) {
+                toast.error("Your session has expired — please sign in again.");
+            } else if (status === 503) {
                 toast.error("Image storage not configured. Paste a URL instead.");
             } else if (status === 413) {
                 toast.error("File too large (max 8 MB).");
+            } else if (status === 502) {
+                toast.error("Couldn't reach storage. Try again, or paste a URL instead.");
             } else {
-                toast.error(detail || "Upload failed. Paste a URL instead.");
+                toast.error(typeof detail === "string" ? detail : "Upload failed. Paste a URL instead.");
             }
             setShowUrl(true);
         } finally {
@@ -92,7 +109,7 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
                 </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
                 <button
                     type="button"
                     onClick={pickFile}
@@ -112,6 +129,9 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
                     <LinkIcon className="w-3.5 h-3.5" />
                     Paste URL
                 </button>
+                <span className="text-[11px] text-mir-muted ml-1">
+                    jpg, png, webp or gif · max 8 MB
+                </span>
             </div>
 
             <input
@@ -119,7 +139,12 @@ export function MediaUpload({ value, onChange, folder = "uploads", token, testId
                 type="file"
                 accept="image/*"
                 onChange={onFile}
-                className="hidden"
+                // sr-only + opacity:0 (not display:none) so Safari/older mobile
+                // browsers will still open the file picker when .click() fires.
+                className="sr-only"
+                style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+                tabIndex={-1}
+                aria-hidden="true"
                 data-testid={`${testIdPrefix}-file-input`}
             />
 
