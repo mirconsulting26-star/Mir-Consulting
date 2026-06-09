@@ -15,7 +15,7 @@ export default function Layout() {
             <Navbar />
             <main
                 className="flex-1 bg-mir-bg"
-                style={{ paddingTop: "calc(5rem + var(--announcement-bar-h, 0px))" }}
+                style={{ paddingTop: "calc(5rem + var(--announcement-bar-layout-h, 0px))" }}
             >
                 <Outlet />
             </main>

@@ -11,8 +11,11 @@ const DISMISS_KEY = "mir-promo-free-consult-v1";
  * - Bumps Navbar's `top` offset using a CSS custom property so the sticky nav
  *   sits flush under it.
  */
+const BAR_HEIGHT = 40; // keep in sync with the h-10 wrapper below
+
 export default function AnnouncementBar() {
     const [visible, setVisible] = React.useState(false);
+    const [pastBar, setPastBar] = React.useState(false);
 
     React.useEffect(() => {
         try {
@@ -23,16 +26,39 @@ export default function AnnouncementBar() {
         }
     }, []);
 
+    // Track scroll so the fixed navbar can snap flush to the viewport top
+    // once the bar has scrolled away — otherwise you see a gap through which
+    // the page body scrolls.
     React.useEffect(() => {
-        // Expose bar height to the rest of the layout via a CSS variable so
-        // sticky elements (navbar) can sit just below it on every viewport.
-        const root = document.documentElement;
-        root.style.setProperty(
-            "--announcement-bar-h",
-            visible ? "40px" : "0px",
-        );
-        return () => root.style.setProperty("--announcement-bar-h", "0px");
+        if (!visible) {
+            setPastBar(false);
+            return undefined;
+        }
+        const onScroll = () => setPastBar(window.scrollY >= BAR_HEIGHT - 1);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
     }, [visible]);
+
+    React.useEffect(() => {
+        // Expose effective bar offset to the rest of the layout via a CSS
+        // variable so sticky/fixed elements (navbar) can sit just below it
+        // while it's in view and snap to top:0 once scrolled past.
+        const root = document.documentElement;
+        const effective = visible && !pastBar ? `${BAR_HEIGHT}px` : "0px";
+        root.style.setProperty("--announcement-bar-h", effective);
+        // The main padding-top needs to account for the bar's actual layout
+        // height (not the dynamic offset) so the hero doesn't jump when the
+        // bar scrolls away.
+        root.style.setProperty(
+            "--announcement-bar-layout-h",
+            visible ? `${BAR_HEIGHT}px` : "0px",
+        );
+        return () => {
+            root.style.setProperty("--announcement-bar-h", "0px");
+            root.style.setProperty("--announcement-bar-layout-h", "0px");
+        };
+    }, [visible, pastBar]);
 
     const dismiss = () => {
         try {
