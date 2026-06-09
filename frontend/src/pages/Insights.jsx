@@ -34,7 +34,7 @@ export default function Insights() {
         <div data-testid="insights-page" className="bg-mir-bg">
             <Seo
                 title="Blog"
-                description="The MIR Consulting blog — practical writing on strategy, marketing, analytics, e-commerce, automation and digital transformation for operators."
+                description="The MIR Consulting blog — practical writing on marketing, SEO, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), brand growth, analytics, automation and digital transformation for ambitious operators."
                 path="/blog"
             />
             <Section testId="insights-hero" className="relative grain-overlay bg-mir-bg">

@@ -9,7 +9,7 @@ const SITE_URL = (
 
 const BASE_TITLE = "MIR Consulting";
 const DEFAULT_DESC =
-    "Premium business, technology and intelligence consulting — strategy, analytics, automation and digital transformation for enterprises.";
+    "Senior-led consulting across business strategy, marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), analytics and digital transformation. Free initial consultation.";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-cover.jpg`; // optional asset; consumers fall back gracefully when missing
 
 /**
@@ -36,7 +36,7 @@ export default function Seo({
     schema,
     noIndex = false,
 }) {
-    const fullTitle = title ? `${title} | ${BASE_TITLE}` : `${BASE_TITLE} | Strategy. Technology. Intelligence.`;
+    const fullTitle = title ? `${title} | ${BASE_TITLE}` : `${BASE_TITLE} — Strategy. Marketing. E-commerce. Intelligence.`;
     const desc = description || DEFAULT_DESC;
     const cleanPath = path.startsWith("/") ? path : `/${path || ""}`;
     const url = `${SITE_URL}${cleanPath === "/" ? "" : cleanPath}`;

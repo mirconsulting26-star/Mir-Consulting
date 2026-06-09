@@ -107,7 +107,7 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                         {isEdit ? "Edit" : "New"} {isCS ? "case study" : "insight"}
                     </div>
                     <div className="text-xs text-mir-muted mt-1">
-                        Markdown supported. Live preview on the right.
+                        Rich text editor — use the toolbar to add headings, images, links and lists.
                     </div>
                 </div>
                 <div className="flex gap-2">

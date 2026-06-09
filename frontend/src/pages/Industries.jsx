@@ -28,7 +28,21 @@ export default function Industries() {
             <Seo
                 title="Industries"
                 path="/industries"
-                description="Operational depth across hospitality, retail, logistics, manufacturing, technology and SMEs — discover how MIR Consulting tailors strategy and intelligence to each sector."
+                description="MIR Consulting brings sector-specific fluency to D2C brands, marketplace sellers, SMBs, hospitality, retail, logistics, manufacturing and technology — tailoring marketing, e-commerce, strategy and intelligence to each operating model."
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "ItemList",
+                    name: "Industries served by MIR Consulting",
+                    itemListElement: INDUSTRIES.map((ind, i) => ({
+                        "@type": "ListItem",
+                        position: i + 1,
+                        item: {
+                            "@type": "Thing",
+                            name: ind.title,
+                            description: ind.summary,
+                        },
+                    })),
+                }}
             />
             <Section testId="industries-hero" className="relative grain-overlay bg-mir-bg">
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />

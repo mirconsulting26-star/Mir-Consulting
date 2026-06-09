@@ -41,15 +41,50 @@ export default function Home() {
         <div data-testid="home-page" className="bg-mir-bg">
             <Seo
                 path="/"
-                description="MIR Consulting delivers premium strategy, technology and intelligence services — building tailored automations, analytics and digital transformation programmes for enterprises across finance, energy, healthcare and the public sector."
-                schema={{
-                    "@context": "https://schema.org",
-                    "@type": "Organization",
-                    name: "MIR Consulting",
-                    url: typeof window !== "undefined" ? window.location.origin : "",
-                    logo: "/og-cover.jpg",
-                    sameAs: [],
-                }}
+                description="MIR Consulting helps modern businesses grow with senior-led strategy, marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), analytics and digital transformation — engineered for D2C brands, marketplace sellers and SMBs. Free initial consultation."
+                schema={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "ProfessionalService",
+                        name: "MIR Consulting",
+                        url: typeof window !== "undefined" ? window.location.origin : "",
+                        logo: "/og-cover.jpg",
+                        description:
+                            "Senior-led consulting across business strategy, marketing, e-commerce, analytics and digital transformation. Free initial consultation for new clients.",
+                        areaServed: "Worldwide",
+                        inLanguage: ["en", "de", "es"],
+                        offers: [
+                            {
+                                "@type": "Offer",
+                                name: "Free initial consultation",
+                                price: "0",
+                                priceCurrency: "EUR",
+                                description: "30-minute discovery call for new clients. No commitment.",
+                            },
+                        ],
+                        hasOfferCatalog: {
+                            "@type": "OfferCatalog",
+                            name: "MIR Consulting Services",
+                            itemListElement: [
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Business Strategy" } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Marketing & Brand Growth", description: "SEO, content marketing, paid acquisition, brand positioning, social media, email marketing." } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "E-commerce & Online Sales", description: "Shopify, WooCommerce, Wix store builds. Amazon, eBay, Etsy seller setup. Multi-channel listing and store operations." } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Analytics & Business Intelligence" } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Process Automation" } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "IT Advisory" } },
+                                { "@type": "Offer", itemOffered: { "@type": "Service", name: "Digital Transformation" } },
+                            ],
+                        },
+                        sameAs: [],
+                    },
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        name: "MIR Consulting",
+                        url: typeof window !== "undefined" ? window.location.origin : "",
+                        inLanguage: ["en", "de", "es"],
+                    },
+                ]}
             />
             <Hero />
 

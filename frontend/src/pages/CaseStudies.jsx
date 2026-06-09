@@ -59,7 +59,7 @@ export default function CaseStudies() {
         <div data-testid="case-studies-page" className="bg-mir-bg">
             <Seo
                 title="Case Studies"
-                description="Selected MIR Consulting engagements — coming soon. Hospitality, retail, logistics and manufacturing case studies."
+                description="Selected MIR Consulting engagements — marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), strategy, automation and analytics work for D2C brands, marketplace sellers, hospitality, retail, logistics and manufacturing."
                 path="/case-studies"
             />
             <Section testId="case-studies-hero" className="relative grain-overlay bg-mir-bg">

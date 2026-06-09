@@ -96,7 +96,7 @@ export default function Contact() {
             <Seo
                 title="Contact"
                 path="/contact"
-                description="Tell us about your operating challenge. A senior MIR Consulting partner will respond — usually within one business day."
+                description="Tell us about your operating challenge — marketing, e-commerce, strategy, analytics or automation. A senior MIR Consulting partner will respond, usually within one business day. Free initial consultation."
             />
             <Section testId="contact-hero" className="relative grain-overlay bg-mir-bg">
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />

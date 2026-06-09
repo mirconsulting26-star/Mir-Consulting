@@ -59,6 +59,7 @@ export default function RichEditor({
             StarterKit.configure({
                 heading: { levels: [2, 3] },
                 codeBlock: false,
+                link: false,
                 horizontalRule: { HTMLAttributes: { class: "my-8 border-mir-border" } },
             }),
             Image.configure({

@@ -55,7 +55,7 @@ export default function OurWork() {
         <div data-testid="our-work-page" className="bg-mir-bg">
             <Seo
                 title="Our Work"
-                description="Case studies, senior perspectives and video conversations from MIR Consulting — engagements, frameworks and operating insight in one place."
+                description="Case studies, expert perspectives and video conversations from MIR Consulting — marketing, e-commerce, strategy, automation and digital transformation work for D2C brands, marketplace sellers and SMBs."
                 path="/our-work"
             />
             <Section testId="our-work-hero" className="relative grain-overlay bg-mir-bg">

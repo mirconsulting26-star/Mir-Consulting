@@ -13,7 +13,26 @@ export default function Services() {
             <Seo
                 title="Services"
                 path="/services"
-                description="Seven integrated MIR Consulting practices: strategy, analytics, IT advisory, automation, marketing, e-commerce and digital transformation — delivered by senior-only engagement teams."
+                description="Senior-led MIR Consulting practices: strategy, marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), analytics, automation, IT advisory and digital transformation — delivered by senior-only engagement teams. Free initial consultation."
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "ItemList",
+                    name: "MIR Consulting Services",
+                    itemListElement: SERVICES.map((s, i) => ({
+                        "@type": "ListItem",
+                        position: i + 1,
+                        item: {
+                            "@type": "Service",
+                            name: s.title,
+                            description: s.summary,
+                            url: typeof window !== "undefined"
+                                ? `${window.location.origin}/services#${s.slug}`
+                                : `/services#${s.slug}`,
+                            provider: { "@type": "Organization", name: "MIR Consulting" },
+                            areaServed: "Worldwide",
+                        },
+                    })),
+                }}
             />
             <Section testId="services-hero" className="relative grain-overlay bg-mir-bg">
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
