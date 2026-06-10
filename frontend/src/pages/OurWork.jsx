@@ -6,6 +6,7 @@ import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchWorks } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 const TABS = [
     { key: "all", label: "All work" },
@@ -47,7 +48,9 @@ export default function OurWork() {
     }, [visibleByTab]);
     // Reset category when it disappears for the current tab
     React.useEffect(() => {
-        if (category !== "all" && !categories.includes(category)) setCategory("all");
+        if (category !== "all" && !categories.includes(category)) {
+            setCategory("all");
+        }
     }, [categories, category]);
     const filtered = visibleByTab.filter((it) => category === "all" || it.category === category);
 

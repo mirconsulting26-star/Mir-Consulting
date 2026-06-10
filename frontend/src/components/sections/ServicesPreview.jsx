@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Section, SectionHeader } from "@/components/sections/Section";
 import { SERVICES } from "@/lib/content";
+import { trackEvent } from "@/lib/analytics";
 import {
     LineChart,
     BarChart3,
@@ -65,6 +66,7 @@ function StandardCard({ s, i }) {
                     to="/services"
                     className="mt-6 inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-mir-text group-hover:text-mir-blue transition-colors self-start"
                     data-testid={`service-card-link-${s.slug}`}
+                    onClick={() => trackEvent("service_card_click", { slug: s.slug, position: i + 1 })}
                 >
                     Explore practice
                     <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -121,6 +123,13 @@ function SpotlightCard({ s, i }) {
                         to="/services"
                         className="mt-8 inline-flex items-center gap-2 px-6 py-3 text-xs uppercase tracking-[0.18em] bg-white text-mir-midnight hover:bg-mir-blue hover:text-white transition-colors"
                         data-testid={`service-card-link-${s.slug}`}
+                        onClick={() =>
+                            trackEvent("service_card_click", {
+                                slug: s.slug,
+                                position: i + 1,
+                                spotlight: true,
+                            })
+                        }
                     >
                         Explore the practice
                         <ArrowUpRight className="w-4 h-4" />

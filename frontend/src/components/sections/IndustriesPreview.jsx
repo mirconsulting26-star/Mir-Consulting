@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { Section, SectionHeader } from "@/components/sections/Section";
 import { INDUSTRIES } from "@/lib/content";
+import { trackEvent } from "@/lib/analytics";
 
 const IMAGE_MAP = {
     hospitality:
@@ -99,6 +100,7 @@ function IndustryCard({ ind, i, cfg }) {
                     to="/industries"
                     aria-label={`Explore ${ind.title}`}
                     data-testid={`industry-card-link-${ind.slug}`}
+                    onClick={() => trackEvent("industry_card_click", { slug: ind.slug, position: i + 1 })}
                     className={`inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-white border-b border-white/30 hover:border-mir-blueSoft hover:text-mir-blueSoft pb-1 self-start transition-colors ${cfg.wide ? "ml-auto" : "mt-6"
                         }`}
                 >

@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteSettingsProvider } from "@/lib/SiteSettingsContext";
 
 import Layout from "@/components/layout/Layout";
+import AnalyticsRouter from "@/lib/AnalyticsRouter";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
@@ -35,6 +36,7 @@ function App() {
             <SiteSettingsProvider>
                 <div className="App bg-mir-bg text-mir-text min-h-screen">
                 <BrowserRouter>
+                    <AnalyticsRouter />
                     <Routes>
                         <Route element={<Layout />}>
                             <Route path="/" element={<Home />} />

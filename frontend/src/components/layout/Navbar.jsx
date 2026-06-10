@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Menu, X, ArrowUpRight, Globe, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LOGO_SRC } from "@/config/branding";
+import { trackEvent } from "@/lib/analytics";
 
 const LANGUAGES = [
     { code: "en", label: "English", short: "EN" },
@@ -49,8 +50,12 @@ export default function Navbar() {
         LANGUAGES[0];
 
     const setLang = (code) => {
+        const previous = i18n.resolvedLanguage || i18n.language;
         i18n.changeLanguage(code);
         setLangOpen(false);
+        if (previous !== code) {
+            trackEvent("language_change", { from: previous || "unknown", to: code });
+        }
     };
 
     return (

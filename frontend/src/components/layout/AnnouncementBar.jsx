@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, X, ArrowRight } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 const DISMISS_KEY = "mir-promo-free-consult-v1";
 
@@ -90,6 +91,7 @@ export default function AnnouncementBar() {
                     <Link
                         to="/contact"
                         data-testid="announcement-bar-cta"
+                        onClick={() => trackEvent("consultation_cta_click", { location: "announcement_bar" })}
                         className="inline-flex items-center gap-1.5 text-mir-blueSoft hover:text-white font-medium underline-offset-4 hover:underline transition-colors"
                     >
                         Book a 30-min call

@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { submitLead } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 import Seo from "@/lib/Seo";
 
 const INDUSTRIES = [
@@ -67,6 +68,13 @@ export default function Contact() {
         setLoading(true);
         try {
             await submitLead(form);
+            trackEvent("lead_submit", {
+                source: "contact_page",
+                industry: form.industry || "unspecified",
+                service_interest: form.service_interest || "unspecified",
+                has_company: Boolean(form.company),
+                has_phone: Boolean(form.phone),
+            });
             toast.success("Consultation request received. We'll be in touch shortly.");
             setForm({
                 full_name: "",

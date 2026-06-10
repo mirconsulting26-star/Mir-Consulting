@@ -14,6 +14,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { submitLead } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Lead-magnet section.
@@ -188,6 +189,11 @@ export default function LeadMagnetSection() {
                 service_interest: active.interest,
                 message,
             });
+            trackEvent("lead_magnet_submit", {
+                asset: openKey,
+                stage: form.stage || "unspecified",
+                has_company: Boolean(form.company),
+            });
             setDownloadUrl(active.pdf);
             toast.success(`${active.title} is ready below.`);
         } catch (err) {
@@ -356,6 +362,12 @@ export default function LeadMagnetSection() {
                                 rel="noreferrer"
                                 download
                                 data-testid="lead-magnet-download"
+                                onClick={() =>
+                                    trackEvent("lead_magnet_download", {
+                                        asset: openKey,
+                                        file: downloadUrl,
+                                    })
+                                }
                                 className="w-full inline-flex items-center justify-center gap-2 bg-mir-blue text-white px-6 py-3 text-sm uppercase tracking-[0.22em] font-medium hover:bg-mir-text transition-colors"
                             >
                                 <Download className="h-4 w-4" />

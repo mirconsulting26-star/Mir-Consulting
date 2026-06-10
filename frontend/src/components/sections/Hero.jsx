@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { CAPABILITIES } from "@/lib/content";
+import { trackEvent } from "@/lib/analytics";
 
 const HERO_BG =
     "https://images.unsplash.com/photo-1644088379091-d574269d422f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2MzR8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGJsdWUlMjBnZW9tZXRyaWMlMjBuZXR3b3JrJTIwZGF0YXxlbnwwfHx8fDE3ODA4NDQ1NTF8MA&ixlib=rb-4.1.0&q=85";
@@ -77,6 +78,7 @@ export default function Hero() {
                         <Link
                             to="/contact"
                             data-testid="hero-cta-primary"
+                            onClick={() => trackEvent("consultation_cta_click", { location: "hero_primary" })}
                             className="group inline-flex items-center gap-3 bg-mir-midnight hover:bg-mir-blue text-white px-8 py-4 text-sm font-medium tracking-wide transition-colors"
                         >
                             Book a free consultation
@@ -85,6 +87,7 @@ export default function Hero() {
                         <Link
                             to="/services"
                             data-testid="hero-cta-secondary"
+                            onClick={() => trackEvent("hero_secondary_cta_click", { target: "services" })}
                             className="group inline-flex items-center gap-3 border border-mir-text/20 hover:border-mir-text/50 text-mir-text px-8 py-4 text-sm font-medium tracking-wide transition-colors"
                         >
                             Explore Services
