@@ -9,7 +9,7 @@ export const LOGO_SRC = logoSrc;
 // Social profiles — paste full https:// URLs.
 // Leave any value as `null` (or empty string) to hide that social icon.
 export const SOCIAL_LINKS = {
-    linkedin: "https://www.linkedin.com/company/mir-consulting",
+    linkedin: "https://www.linkedin.com/company/mir-consulting-group",
     facebook: null,
     x: null, // formerly Twitter
 };
