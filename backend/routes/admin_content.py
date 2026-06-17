@@ -33,15 +33,10 @@ async def admin_create_post(payload: PostCreate, _: bool = Depends(require_admin
     base = slugify(payload.slug or payload.title)
     slug = await unique_slug(db.posts, base)
     now = utc_now_iso()
+    data = payload.model_dump(exclude={"slug"})
     post = Post(
+        **data,
         slug=slug,
-        title=payload.title,
-        excerpt=payload.excerpt,
-        content=payload.content,
-        category=payload.category,
-        cover_image=payload.cover_image,
-        read_time=payload.read_time,
-        status=payload.status,
         published_at=now if payload.status == "published" else None,
     )
     await db.posts.insert_one(post.model_dump())
@@ -68,14 +63,8 @@ async def admin_update_post(
     now = utc_now_iso()
     publish_now = payload.status == "published" and existing.get("status") != "published"
     updates = {
+        **payload.model_dump(exclude={"slug"}),
         "slug": slug,
-        "title": payload.title,
-        "excerpt": payload.excerpt,
-        "content": payload.content,
-        "category": payload.category,
-        "cover_image": payload.cover_image,
-        "read_time": payload.read_time,
-        "status": payload.status,
         "updated_at": now,
     }
     if publish_now:
@@ -105,16 +94,11 @@ async def admin_create_case_study(payload: CaseStudyCreate, _: bool = Depends(re
     base = slugify(payload.slug or payload.title)
     slug = await unique_slug(db.case_studies, base)
     now = utc_now_iso()
+    data = payload.model_dump(exclude={"slug"})
+    data["outcomes"] = data.get("outcomes") or []
     cs = CaseStudy(
+        **data,
         slug=slug,
-        title=payload.title,
-        sector=payload.sector,
-        summary=payload.summary,
-        content=payload.content,
-        cover_image=payload.cover_image,
-        client_name=payload.client_name,
-        outcomes=payload.outcomes or [],
-        status=payload.status,
         published_at=now if payload.status == "published" else None,
     )
     await db.case_studies.insert_one(cs.model_dump())
@@ -140,18 +124,9 @@ async def admin_update_case_study(
     slug = await unique_slug(db.case_studies, base, exclude_id=cs_id)
     now = utc_now_iso()
     publish_now = payload.status == "published" and existing.get("status") != "published"
-    updates = {
-        "slug": slug,
-        "title": payload.title,
-        "sector": payload.sector,
-        "summary": payload.summary,
-        "content": payload.content,
-        "cover_image": payload.cover_image,
-        "client_name": payload.client_name,
-        "outcomes": payload.outcomes or [],
-        "status": payload.status,
-        "updated_at": now,
-    }
+    data = payload.model_dump(exclude={"slug"})
+    data["outcomes"] = data.get("outcomes") or []
+    updates = {**data, "slug": slug, "updated_at": now}
     if publish_now:
         updates["published_at"] = now
     await db.case_studies.update_one({"id": cs_id}, {"$set": updates})
@@ -236,15 +211,12 @@ async def create_video(payload: VideoCreate, _: bool = Depends(require_admin)):
     yt_id = _extract_youtube_id(payload.youtube_url)
     if not yt_id:
         raise HTTPException(status_code=400, detail="Could not extract YouTube video id from the URL")
+    data = payload.model_dump(exclude={"slug"})
+    data["category"] = data.get("category") or "Video"
     video = Video(
+        **data,
         slug=slug,
-        title=payload.title,
-        description=payload.description,
-        youtube_url=payload.youtube_url,
         youtube_id=yt_id,
-        category=payload.category or "Video",
-        cover_image=payload.cover_image,
-        status=payload.status,
         published_at=now if payload.status == "published" else None,
     )
     await db.videos.insert_one(video.model_dump())
@@ -265,17 +237,9 @@ async def update_video(
     slug = await unique_slug(db.videos, base, exclude_id=video_id)
     now = utc_now_iso()
     publish_now = payload.status == "published" and existing.get("status") != "published"
-    updates = {
-        "slug": slug,
-        "title": payload.title,
-        "description": payload.description,
-        "youtube_url": payload.youtube_url,
-        "youtube_id": yt_id,
-        "category": payload.category or "Video",
-        "cover_image": payload.cover_image,
-        "status": payload.status,
-        "updated_at": now,
-    }
+    data = payload.model_dump(exclude={"slug"})
+    data["category"] = data.get("category") or "Video"
+    updates = {**data, "slug": slug, "youtube_id": yt_id, "updated_at": now}
     if publish_now:
         updates["published_at"] = now
     await db.videos.update_one({"id": video_id}, {"$set": updates})
