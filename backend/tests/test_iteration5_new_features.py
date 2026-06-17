@@ -4,7 +4,7 @@ import time
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://mir-consulting-next.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://consulting-cms-hub.preview.emergentagent.com").rstrip("/")
 ADMIN_PASSWORD = "mir-admin-2026"
 API = f"{BASE_URL}/api"
 
