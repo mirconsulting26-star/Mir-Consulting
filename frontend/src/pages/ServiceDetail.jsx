@@ -26,7 +26,9 @@ export default function ServiceDetail() {
 
     if (!service) return <Navigate to="/services" replace />;
 
-    const relatedWorks = (works || []).filter((w) => (w.service_slugs || []).includes(slug));
+    const relatedWorks = (works || []).filter(
+        (w) => !w.is_scheduled && (w.service_slugs || []).includes(slug)
+    );
     const relatedTeam = (team || []).filter((m) => (m.service_slugs || []).includes(slug));
     const img = SERVICE_HERO_IMAGES[slug];
 

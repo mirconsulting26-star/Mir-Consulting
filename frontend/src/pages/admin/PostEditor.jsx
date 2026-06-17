@@ -7,7 +7,7 @@ import { adminTranslate } from "@/lib/api";
 import { btnGhost, btnPrimary, inputCls } from "./_shared";
 import RichEditor from "@/components/admin/RichEditor";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import DateTimeField from "@/components/admin/DateTimeField";
+import DateTimeField, { formatScheduleLabel, isFutureSchedule } from "@/components/admin/DateTimeField";
 import TagSelector from "@/components/admin/TagSelector";
 import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
@@ -261,6 +261,23 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                             <p className="text-[11px] text-mir-muted">
                                 Pick a future date &amp; time to show a "Coming soon" page until then (your local time). Leave empty to go live as soon as you publish.
                             </p>
+                            {form.scheduled_for &&
+                                (isFutureSchedule(form.scheduled_for) ? (
+                                    <p
+                                        data-testid="admin-editor-schedule-status"
+                                        className="text-[11px] text-mir-blue font-medium"
+                                    >
+                                        Scheduled — visitors see a "Coming soon" page until{" "}
+                                        {formatScheduleLabel(form.scheduled_for)}.
+                                    </p>
+                                ) : (
+                                    <p
+                                        data-testid="admin-editor-schedule-status"
+                                        className="text-[11px] text-amber-600 font-medium"
+                                    >
+                                        This date/time is in the past — it will publish immediately.
+                                    </p>
+                                ))}
                             {form.scheduled_for && (
                                 <button
                                     type="button"

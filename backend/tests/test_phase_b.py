@@ -92,12 +92,17 @@ class TestScheduledPublishing:
             assert d.get("is_scheduled") is True
             assert d.get("content") == ""
             assert d.get("title") == payload["title"]
-            # List: excluded
+            # List: now INCLUDED as a "Coming soon" teaser, but masked + flagged
             lst = requests.get(f"{API}/posts", timeout=10).json()
-            assert all(p["slug"] != slug for p in lst)
-            # Works feed: excluded
+            item = next((p for p in lst if p["slug"] == slug), None)
+            assert item is not None, "scheduled post should appear in the list"
+            assert item.get("is_scheduled") is True
+            assert item.get("content") == ""
+            assert item.get("excerpt") == payload["excerpt"]  # teaser kept
+            # Works feed: included and flagged
             works = requests.get(f"{API}/works", timeout=10).json()
-            assert all(w.get("slug") != slug for w in works)
+            w = next((x for x in works if x.get("slug") == slug), None)
+            assert w is not None and w.get("is_scheduled") is True
         finally:
             requests.delete(f"{API}/admin/posts/{pid}", headers=auth, timeout=10)
 

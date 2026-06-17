@@ -25,20 +25,11 @@ router = APIRouter()
 SITE_SETTINGS_KEY = "site"
 
 
-def _live_filter() -> dict:
-    """Mongo filter for published items that are NOT scheduled for a future
-    date/time. Compares against the full current UTC ISO timestamp so an item
-    scheduled for earlier today goes live the minute its time passes (works for
-    both legacy date-only values and full datetime values)."""
-    now = utc_now_iso()
-    return {
-        "status": "published",
-        "$or": [
-            {"scheduled_for": {"$in": [None, ""]}},
-            {"scheduled_for": {"$exists": False}},
-            {"scheduled_for": {"$lte": now}},
-        ],
-    }
+def _published_filter() -> dict:
+    """All published items, including those scheduled for a future date.
+    Future-dated items are surfaced in listings as 'Coming soon' teasers but
+    have their body masked (see _mask_scheduled / _list_mask)."""
+    return {"status": "published"}
 
 
 def _is_future_scheduled(scheduled_for: Optional[str]) -> bool:
@@ -54,6 +45,14 @@ def _mask_scheduled(doc: dict, content_keys: tuple) -> dict:
         masked[key] = ""
     masked["is_scheduled"] = True
     return masked
+
+
+def _list_mask(doc: dict, content_keys: tuple) -> dict:
+    """For listing endpoints: mask the body of future-scheduled items so the
+    card renders as a 'Coming soon' teaser, but leave live items untouched."""
+    if _is_future_scheduled(doc.get("scheduled_for")):
+        return _mask_scheduled(doc, content_keys)
+    return doc
 
 
 @router.get("/")
@@ -97,11 +96,12 @@ async def subscribe(request: Request, payload: SubscribeCreate, background: Back
 
 @router.get("/posts", response_model=List[Post])
 async def list_posts():
-    return await (
-        db.posts.find(_live_filter(), {"_id": 0})
+    docs = await (
+        db.posts.find(_published_filter(), {"_id": 0})
         .sort("published_at", -1)
         .to_list(200)
     )
+    return [_list_mask(d, ("content",)) for d in docs]
 
 
 @router.get("/posts/{slug}", response_model=Post)
@@ -116,11 +116,12 @@ async def get_post(slug: str):
 
 @router.get("/case-studies", response_model=List[CaseStudy])
 async def list_case_studies():
-    return await (
-        db.case_studies.find(_live_filter(), {"_id": 0})
+    docs = await (
+        db.case_studies.find(_published_filter(), {"_id": 0})
         .sort("published_at", -1)
         .to_list(200)
     )
+    return [_list_mask(d, ("content",)) for d in docs]
 
 
 @router.get("/case-studies/{slug}", response_model=CaseStudy)
@@ -154,11 +155,12 @@ async def get_team_member_public(slug: str):
 
 @router.get("/videos", response_model=List[Video])
 async def list_videos_public():
-    return await (
-        db.videos.find(_live_filter(), {"_id": 0})
+    docs = await (
+        db.videos.find(_published_filter(), {"_id": 0})
         .sort("published_at", -1)
         .to_list(200)
     )
+    return [_list_mask(d, ("description",)) for d in docs]
 
 
 @router.get("/videos/{slug}", response_model=Video)
@@ -173,12 +175,13 @@ async def get_video_public(slug: str):
 
 @router.get("/works")
 async def list_works(type: Optional[str] = None):
-    """Unified feed of published insights + case studies + videos (excludes future-scheduled)."""
+    """Unified feed of published insights + case studies + videos. Future-scheduled
+    items are included as 'Coming soon' teasers (is_scheduled=true)."""
     items: list[dict] = []
-    live = _live_filter()
+    published = _published_filter()
 
     if not type or type == "insight":
-        for p in await db.posts.find(live, {"_id": 0}).sort("published_at", -1).to_list(200):
+        for p in await db.posts.find(published, {"_id": 0}).sort("published_at", -1).to_list(200):
             items.append({
                 "type": "insight",
                 "id": p.get("id"),
@@ -189,13 +192,15 @@ async def list_works(type: Optional[str] = None):
                 "cover_image": p.get("cover_image"),
                 "read_time": p.get("read_time"),
                 "published_at": p.get("published_at"),
+                "scheduled_for": p.get("scheduled_for"),
+                "is_scheduled": _is_future_scheduled(p.get("scheduled_for")),
                 "service_slugs": p.get("service_slugs", []),
                 "industry_slugs": p.get("industry_slugs", []),
                 "href": f"/insights/{p.get('slug')}",
             })
 
     if not type or type == "case_study":
-        for c in await db.case_studies.find(live, {"_id": 0}).sort("published_at", -1).to_list(200):
+        for c in await db.case_studies.find(published, {"_id": 0}).sort("published_at", -1).to_list(200):
             items.append({
                 "type": "case_study",
                 "id": c.get("id"),
@@ -206,13 +211,15 @@ async def list_works(type: Optional[str] = None):
                 "cover_image": c.get("cover_image"),
                 "client_name": c.get("client_name"),
                 "published_at": c.get("published_at"),
+                "scheduled_for": c.get("scheduled_for"),
+                "is_scheduled": _is_future_scheduled(c.get("scheduled_for")),
                 "service_slugs": c.get("service_slugs", []),
                 "industry_slugs": c.get("industry_slugs", []),
                 "href": f"/case-studies/{c.get('slug')}",
             })
 
     if not type or type == "video":
-        for v in await db.videos.find(live, {"_id": 0}).sort("published_at", -1).to_list(200):
+        for v in await db.videos.find(published, {"_id": 0}).sort("published_at", -1).to_list(200):
             items.append({
                 "type": "video",
                 "id": v.get("id"),
@@ -227,6 +234,8 @@ async def list_works(type: Optional[str] = None):
                 "youtube_id": v.get("youtube_id"),
                 "youtube_url": v.get("youtube_url"),
                 "published_at": v.get("published_at"),
+                "scheduled_for": v.get("scheduled_for"),
+                "is_scheduled": _is_future_scheduled(v.get("scheduled_for")),
                 "service_slugs": v.get("service_slugs", []),
                 "industry_slugs": v.get("industry_slugs", []),
                 "href": f"/our-work/video/{v.get('slug')}",

@@ -8,7 +8,7 @@ import {
     deleteVideo,
 } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import DateTimeField from "@/components/admin/DateTimeField";
+import DateTimeField, { formatScheduleLabel, isFutureSchedule } from "@/components/admin/DateTimeField";
 import TagSelector from "@/components/admin/TagSelector";
 import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
@@ -322,6 +322,17 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
                     <p className="text-[11px] text-mir-muted mt-1">
                         Pick a future date &amp; time to show a "Coming soon" page until then (your local time).
                     </p>
+                    {form.scheduled_for &&
+                        (isFutureSchedule(form.scheduled_for) ? (
+                            <p data-testid="video-schedule-status" className="text-[11px] text-mir-blue font-medium mt-1">
+                                Scheduled — visitors see a "Coming soon" page until{" "}
+                                {formatScheduleLabel(form.scheduled_for)}.
+                            </p>
+                        ) : (
+                            <p data-testid="video-schedule-status" className="text-[11px] text-amber-600 font-medium mt-1">
+                                This date/time is in the past — it will publish immediately.
+                            </p>
+                        ))}
                 </Field>
 
                 <TagSelector

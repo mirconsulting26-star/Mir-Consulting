@@ -92,6 +92,13 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
 - Backend `.env`: `ADMIN_PASSWORD`, `ADMIN_TOKEN`, `MONGO_URL`, `DB_NAME`, `CORS_ORIGINS`, `COMPANY_EMAIL`, `SMTP_*` (live), `PUBLIC_BASE_URL`, `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`.
 
 ## Changelog
+
+- 2026-06-17 — **P0 fix: stale public listings (cache.js) + more seed content** (frontend verified 100% — iteration_8.json):
+  - **Root cause of recurring "published post doesn't show on /blog" bug:** the custom `sessionStorage` persistence in `lib/cache.js` kept serving a stale list snapshot across full-page reloads. Prior testing always passed because the testing agent runs a fresh browser (empty sessionStorage) while the real user had a polluted one.
+  - **Fix:** rewrote `frontend/src/lib/cache.js` to be **memory-only** (removed all sessionStorage read/write). Now: full reload → empty cache → always fresh fetch; SPA nav → instant render from memory + immediate background revalidate (`useLiveData` uses `ttl:0` + `subscribeCache`). Fresh & returning sessions now behave identically. Scheduling feature was KEPT (it was never the cause).
+  - **Verified lifecycle:** created a post in admin → SPA-navigated to `/blog` (no hard refresh) → card appeared immediately. Delete propagated too. Zero console errors.
+  - **Seed content:** added 3 more posts (1 future-scheduled "AI in the Back Office") and 2 more case studies (1 future-scheduled "Finance Close Automation") in `backend/scripts/seed_content.py`. Public lists now show 6 posts + 5 case studies, with two live "Coming Soon" teasers demonstrating the scheduled-publishing UI.
+
 - 2025-12 — MVP site (pages, contact form, basic admin).
 - 2026-02 (a) — Full CMS for Insights + Case Studies, lead status workflow + drawer + delete, rate-limiting, SEO basics, markdown live preview, typography plugin, CaseStudyDetail page.
 - 2026-02 (b) — Invoice module (multi-currency, ReportLab PDF, download + public token view + email send), Gmail SMTP integration for new-lead notifications, multi-language site (EN/DE/ES) with globe switcher, stats now include invoice counters.
@@ -166,6 +173,13 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
   - **Lead-magnet PDFs now branded.** Replaced the placeholder PDFs with reportlab-built two-page worksheets that carry the actual MIR Consulting logo (`frontend/src/assets/logo.png`) + "Mir Consulting" wordmark + "Marketing • E-commerce • Strategy" tagline in a persistent page header, and a footer with the company email + page numbers. Generator script saved at `/app/backend/scripts/generate_lead_magnets.py` (re-runnable, idempotent — overwrites the public/resources files). Content unchanged: 28-question marketing quick-check and 32-point e-commerce audit. Output is ~205 KB each, served at 200 from `/resources/*.pdf`. Verified header includes logo + wordmark via PDF inspection.
 
 ## Backlog (refreshed 2026-06-09 — see above)
+
+## Changelog (continued)
+- 2026-06-17 — **Scheduling fixes: date-alone picker + visible "Coming soon" teasers** (frontend verified 100% — iteration_7.json):
+  - **Root-caused "I set a date but it published anyway".** `<input type="datetime-local">` returns an empty value until BOTH date and time are entered, so a date-only selection silently dropped the schedule → immediate publish. Replaced with a **separate Date + Time picker** (`DateTimeField.jsx`): a date alone is enough (time defaults to 00:00); the time input is disabled until a date is set. Added a clear status line (`admin-editor-schedule-status` / `video-schedule-status`): blue "Scheduled — visitors see a Coming soon page until …" for future, amber "…in the past — it will publish immediately" for past.
+  - **Scheduled content now VISIBLE as "Coming soon" teasers.** Per user request, future-scheduled published posts/case-studies/videos now appear in the public listings (`/blog`, `/case-studies`, `/our-work`) with a "Coming soon · <date>" badge and a "Coming soon" CTA, and clicking opens the Coming Soon page (body hidden). Backend (`public.py`) switched list/works endpoints from `_live_filter` (excluded) to `_published_filter` + `_list_mask` (included but masked, `is_scheduled=true`, excerpt kept as teaser). Related-work rails on Service/Industry/Team pages explicitly EXCLUDE scheduled items.
+  - New components: `ComingSoonBadge.jsx`. Backend tests updated (`test_phase_b.py` now asserts inclusion+masking); 11/11 pass.
+
 
 ## Changelog (continued)
 - 2026-06-17 — **Publish-visibility bug fix + datetime scheduling + real seeded content** (frontend verified 100% — iteration_6.json):
