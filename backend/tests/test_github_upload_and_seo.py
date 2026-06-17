@@ -10,7 +10,7 @@ import zlib
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/") or "https://mir-consulting-next.preview.emergentagent.com"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/") or "https://consulting-cms-hub.preview.emergentagent.com"
 ADMIN_PASSWORD = "mir-admin-2026"
 
 

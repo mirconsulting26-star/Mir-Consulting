@@ -7,7 +7,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from deps import LEAD_STATUSES, db, require_admin, utc_now_iso
-from models import Lead, LeadUpdate
+from models import Lead, LeadUpdate, Subscriber
 
 router = APIRouter(prefix="/admin")
 
@@ -79,6 +79,7 @@ async def admin_stats(_: bool = Depends(require_admin)):
         {"status": {"$in": ["sent", "overdue"]}}
     )
     invoices_paid = await db.invoices.count_documents({"status": "paid"})
+    subscribers_total = await db.subscribers.count_documents({})
     return {
         "total_leads": total,
         "new_leads": new_count,
@@ -90,7 +91,41 @@ async def admin_stats(_: bool = Depends(require_admin)):
         "invoices_total": invoices_total,
         "invoices_outstanding": invoices_outstanding,
         "invoices_paid": invoices_paid,
+        "subscribers_total": subscribers_total,
     }
+
+
+@router.get("/subscribers", response_model=List[Subscriber])
+async def list_subscribers(_: bool = Depends(require_admin)):
+    return await db.subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+
+
+@router.delete("/subscribers/{sub_id}")
+async def delete_subscriber(sub_id: str, _: bool = Depends(require_admin)):
+    result = await db.subscribers.delete_one({"id": sub_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+    return {"deleted": True}
+
+
+@router.get("/subscribers-export.csv")
+async def export_subscribers_csv(_: bool = Depends(require_admin)):
+    rows = await db.subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["id", "created_at", "email", "name", "source"])
+    for r in rows:
+        writer.writerow([
+            r.get("id", ""), r.get("created_at", ""), r.get("email", ""),
+            r.get("name", "") or "", r.get("source", "") or "",
+        ])
+    csv_bytes = buf.getvalue().encode("utf-8-sig")
+    filename = f"mir-subscribers-{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.csv"
+    return Response(
+        content=csv_bytes,
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/leads-export.csv")

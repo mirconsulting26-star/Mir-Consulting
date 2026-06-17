@@ -5,6 +5,8 @@ import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import RichContent from "@/components/RichContent";
+import ComingSoon from "@/components/sections/ComingSoon";
+import RelatedInsights from "@/components/sections/RelatedInsights";
 import { fetchPost } from "@/lib/api";
 
 export default function InsightDetail() {
@@ -54,6 +56,22 @@ export default function InsightDetail() {
                     </Link>
                 </div>
             </Section>
+        );
+    }
+
+    if (post.is_scheduled) {
+        return (
+            <>
+                <Seo title={post.title} noIndex path={`/blog/${post.slug}`} />
+                <ComingSoon
+                    title={post.title}
+                    category={post.category}
+                    scheduledFor={post.scheduled_for}
+                    backTo="/blog"
+                    backLabel="Back to blog"
+                    source="coming-soon-blog"
+                />
+            </>
         );
     }
 
@@ -124,6 +142,8 @@ export default function InsightDetail() {
                 secondaryLabel="More articles"
                 secondaryTo="/blog"
             />
+
+            <RelatedInsights current={post} />
         </div>
     );
 }

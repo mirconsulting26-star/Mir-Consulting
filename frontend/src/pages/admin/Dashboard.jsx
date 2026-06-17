@@ -14,6 +14,7 @@ import {
     UserCircle2,
     PlayCircle,
     Settings,
+    Mail,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { fetchStats } from "@/lib/api";
@@ -22,6 +23,7 @@ import TeamPanel from "./TeamPanel";
 import VideosPanel from "./VideosPanel";
 import SiteSettingsPanel from "./SiteSettingsPanel";
 import LeadsPanel from "./LeadsPanel";
+import SubscribersPanel from "./SubscribersPanel";
 import { PostsPanel, CaseStudiesPanel } from "./PostsPanel";
 import ChangePasswordDialog from "./ChangePasswordDialog";
 import { btnGhost } from "./_shared";
@@ -110,6 +112,7 @@ export default function Dashboard({ token, onLogout, onAuthExpired }) {
                             { v: "invoices", label: "Invoices", icon: Receipt },
                             { v: "videos", label: "Videos", icon: PlayCircle },
                             { v: "team", label: "Team", icon: UserCircle2 },
+                            { v: "subscribers", label: "Subscribers", icon: Mail },
                             { v: "site-settings", label: "Site", icon: Settings },
                         ].map(({ v, label, icon: Icon }) => (
                             <TabsTrigger
@@ -159,6 +162,9 @@ export default function Dashboard({ token, onLogout, onAuthExpired }) {
                     </TabsContent>
                     <TabsContent value="team" className="mt-6">
                         <TeamPanel token={token} onAuthExpired={onAuthExpired} onChange={loadStats} />
+                    </TabsContent>
+                    <TabsContent value="subscribers" className="mt-6">
+                        <SubscribersPanel token={token} onAuthExpired={onAuthExpired} onChange={loadStats} />
                     </TabsContent>
                     <TabsContent value="site-settings" className="mt-6">
                         <SiteSettingsPanel token={token} onAuthExpired={onAuthExpired} />

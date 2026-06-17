@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check } from "lucide-react";
 import { Section } from "@/components/sections/Section";
+import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import LeadMagnetSection from "@/components/sections/LeadMagnetSection";
 import Seo from "@/lib/Seo";
-import { SERVICES } from "@/lib/content";
+import { SERVICES, SERVICE_HERO_IMAGES, PAGE_HERO_IMAGES } from "@/lib/content";
 
 export default function Services() {
     return (
@@ -36,6 +37,7 @@ export default function Services() {
                 }}
             />
             <Section testId="services-hero" className="relative grain-overlay bg-mir-bg">
+                <HeroImageLayer src={PAGE_HERO_IMAGES.services} side="right" />
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">
@@ -65,7 +67,7 @@ export default function Services() {
             </Section>
 
             <Section testId="services-list" className="border-t border-mir-border !py-12 bg-mir-bg">
-                <div className="divide-y divide-mir-border border-y border-mir-border">
+                <div className="space-y-px">
                     {SERVICES.map((s, i) => (
                         <motion.div
                             key={s.slug}
@@ -74,84 +76,100 @@ export default function Services() {
                             viewport={{ once: true, margin: "-80px" }}
                             transition={{ duration: 0.5 }}
                             data-testid={`service-detail-${s.slug}`}
-                            className="grid grid-cols-1 lg:grid-cols-12 gap-10 py-14"
+                            className="grid grid-cols-1 lg:grid-cols-12 border border-mir-border bg-white"
                         >
-                            <div className="lg:col-span-4">
-                                <div className="font-heading text-mir-blue/70 text-sm tracking-widest mb-4">
-                                    /0{i + 1}
-                                </div>
-                                <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-mir-text">
-                                    {s.title}
-                                </h2>
-                                <p className="mt-3 text-mir-blueInk text-sm tracking-wide font-medium">
-                                    {s.tagline}
-                                </p>
-                                <p className="mt-6 text-mir-muted text-sm leading-relaxed">
-                                    {s.summary}
-                                </p>
-                                <div className="mt-8 flex flex-wrap gap-2">
-                                    {s.industries.map((ind) => (
-                                        <span
-                                            key={ind}
-                                            className="text-[11px] uppercase tracking-[0.15em] text-mir-textSoft border border-mir-border px-3 py-1.5 bg-mir-surface"
-                                        >
-                                            {ind}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="lg:col-span-4">
-                                <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mb-5">
-                                    Problems we solve
-                                </div>
-                                <ul className="space-y-3">
-                                    {s.problems.map((p) => (
-                                        <li
-                                            key={p}
-                                            className="flex items-start gap-3 text-sm text-mir-textSoft"
-                                        >
-                                            <span className="w-1.5 h-1.5 rounded-full bg-mir-blue mt-2 shrink-0" />
-                                            {p}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mt-10 mb-5">
-                                    Offerings
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {s.offerings.map((o) => (
-                                        <span
-                                            key={o}
-                                            className="text-xs text-mir-textSoft border border-mir-border bg-white px-3 py-1.5"
-                                        >
-                                            {o}
-                                        </span>
-                                    ))}
+                            {/* Image panel — mirrors the Industries list visual */}
+                            <div className="lg:col-span-5 relative min-h-[320px] overflow-hidden border-b lg:border-b-0 lg:border-r border-mir-border bg-mir-midnight">
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center opacity-70"
+                                    style={{ backgroundImage: `url(${SERVICE_HERO_IMAGES[s.slug]})` }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-mir-midnight via-mir-midnight/70 to-transparent" />
+                                <div className="relative h-full p-8 md:p-12 flex flex-col justify-end">
+                                    <div className="font-heading text-mir-blueSoft text-sm tracking-widest mb-4">
+                                        Practice /0{i + 1}
+                                    </div>
+                                    <Link
+                                        to={`/services/${s.slug}`}
+                                        data-testid={`service-link-${s.slug}`}
+                                    >
+                                        <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-white hover:text-mir-blueSoft transition-colors">
+                                            {s.title}
+                                        </h2>
+                                    </Link>
+                                    <p className="mt-3 text-mir-blueSoft text-sm tracking-wide">
+                                        {s.tagline}
+                                    </p>
+                                    <p className="mt-4 text-white/80 text-sm max-w-md leading-relaxed">
+                                        {s.summary}
+                                    </p>
+                                    <Link
+                                        to={`/services/${s.slug}`}
+                                        data-testid={`service-view-${s.slug}`}
+                                        className="mt-6 group inline-flex items-center gap-2 text-sm text-mir-blueSoft font-medium"
+                                    >
+                                        View full practice
+                                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                    </Link>
                                 </div>
                             </div>
-                            <div className="lg:col-span-4">
-                                <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mb-5">
-                                    Outcomes
+                            {/* Details */}
+                            <div className="lg:col-span-7 p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-10">
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mb-5">
+                                        Problems we solve
+                                    </div>
+                                    <ul className="space-y-3">
+                                        {s.problems.map((p) => (
+                                            <li
+                                                key={p}
+                                                className="flex items-start gap-3 text-sm text-mir-textSoft"
+                                            >
+                                                <span className="w-1.5 h-1.5 rounded-full bg-mir-blue mt-2 shrink-0" />
+                                                {p}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                                <ul className="space-y-4">
-                                    {s.outcomes.map((o) => (
-                                        <li
-                                            key={o}
-                                            className="flex items-start gap-3 text-sm text-mir-text"
-                                        >
-                                            <Check className="w-4 h-4 text-mir-blue mt-0.5 shrink-0" />
-                                            {o}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Link
-                                    to="/contact"
-                                    data-testid={`service-cta-${s.slug}`}
-                                    className="mt-10 group inline-flex items-center gap-2 border border-mir-text/15 hover:border-mir-blue px-5 py-3 text-sm text-mir-text transition-colors"
-                                >
-                                    Discuss this practice
-                                    <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                </Link>
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mb-5">
+                                        Offerings
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {s.offerings.map((o) => (
+                                            <span
+                                                key={o}
+                                                className="text-xs text-mir-textSoft border border-mir-border bg-mir-surface px-3 py-1.5"
+                                            >
+                                                {o}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-[11px] uppercase tracking-[0.25em] text-mir-muted mb-5">
+                                        Outcomes
+                                    </div>
+                                    <ul className="space-y-4">
+                                        {s.outcomes.map((o) => (
+                                            <li
+                                                key={o}
+                                                className="flex items-start gap-3 text-sm text-mir-text"
+                                            >
+                                                <Check className="w-4 h-4 text-mir-blue mt-0.5 shrink-0" />
+                                                {o}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Link
+                                        to="/contact"
+                                        data-testid={`service-cta-${s.slug}`}
+                                        className="mt-8 group inline-flex items-center gap-2 text-sm text-mir-blue font-medium"
+                                    >
+                                        Discuss this practice
+                                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                    </Link>
+                                </div>
                             </div>
                         </motion.div>
                     ))}

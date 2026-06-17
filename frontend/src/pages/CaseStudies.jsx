@@ -2,9 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Clock, ArrowUpRight } from "lucide-react";
 import { Section } from "@/components/sections/Section";
+import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchCaseStudies } from "@/lib/api";
+import { PAGE_HERO_IMAGES } from "@/lib/content";
 
 const FALLBACK = [
     {
@@ -63,6 +65,7 @@ export default function CaseStudies() {
                 path="/case-studies"
             />
             <Section testId="case-studies-hero" className="relative grain-overlay bg-mir-bg">
+                <HeroImageLayer src={PAGE_HERO_IMAGES.caseStudies} side="left" />
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_left,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">

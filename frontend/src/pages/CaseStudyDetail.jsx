@@ -5,6 +5,7 @@ import { ArrowLeft, Briefcase, CheckCircle2, Loader2 } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
+import ComingSoon from "@/components/sections/ComingSoon";
 import { fetchCaseStudy } from "@/lib/api";
 
 export default function CaseStudyDetail() {
@@ -54,6 +55,22 @@ export default function CaseStudyDetail() {
                     </Link>
                 </div>
             </Section>
+        );
+    }
+
+    if (cs.is_scheduled) {
+        return (
+            <>
+                <Seo title={cs.title} noIndex path={`/case-studies/${cs.slug}`} />
+                <ComingSoon
+                    title={cs.title}
+                    category={cs.sector}
+                    scheduledFor={cs.scheduled_for}
+                    backTo="/case-studies"
+                    backLabel="Back to case studies"
+                    source="coming-soon-case-study"
+                />
+            </>
         );
     }
 

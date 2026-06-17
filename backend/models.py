@@ -100,6 +100,7 @@ class Post(BaseModel):
     service_slugs: List[str] = Field(default_factory=list)
     industry_slugs: List[str] = Field(default_factory=list)
     scheduled_for: Optional[str] = None
+    is_scheduled: Optional[bool] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None
@@ -137,6 +138,7 @@ class CaseStudy(BaseModel):
     service_slugs: List[str] = Field(default_factory=list)
     industry_slugs: List[str] = Field(default_factory=list)
     scheduled_for: Optional[str] = None
+    is_scheduled: Optional[bool] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None
@@ -201,9 +203,27 @@ class Video(BaseModel):
     service_slugs: List[str] = Field(default_factory=list)
     industry_slugs: List[str] = Field(default_factory=list)
     scheduled_for: Optional[str] = None
+    is_scheduled: Optional[bool] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None
+
+
+# ---------------- Subscribers ----------------
+class SubscribeCreate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    email: EmailStr
+    name: Optional[str] = Field(default=None, max_length=160)
+    source: Optional[str] = Field(default=None, max_length=80)
+
+
+class Subscriber(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    email: str
+    name: Optional[str] = None
+    source: Optional[str] = None
+    created_at: str = Field(default_factory=utc_now_iso)
 
 
 # ---------------- Invoices ----------------

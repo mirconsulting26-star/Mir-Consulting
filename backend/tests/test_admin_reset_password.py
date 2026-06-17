@@ -31,7 +31,7 @@ import auth_admin  # noqa: E402
 
 BASE_URL = os.environ.get(
     "REACT_APP_BACKEND_URL",
-    "https://mir-consulting-next.preview.emergentagent.com",
+    "https://consulting-cms-hub.preview.emergentagent.com",
 ).rstrip("/")
 ADMIN_EMAIL = "mirconsulting26@gmail.com"
 ORIGINAL_PASSWORD = "mir-admin-2026"

@@ -105,6 +105,8 @@ async def on_startup():
         await auth_admin.ensure_reset_indexes(db)
         await db.team_members.create_index([("order", 1), ("created_at", 1)])
         await db.videos.create_index("slug", unique=True)
+        await db.subscribers.create_index("email", unique=True)
+        await _backfill_team_slugs()
         logger.info("Admin auth bootstrapped (admin seeded, indexes ensured).")
     except Exception as e:  # noqa: BLE001
         logger.exception("Auth bootstrap failed: %s", e)
@@ -113,3 +115,19 @@ async def on_startup():
 @app.on_event("shutdown")
 async def on_shutdown():
     close_db_client()
+
+
+async def _backfill_team_slugs():
+    """Ensure every team member has a unique URL slug (Phase E)."""
+    from slugify import slugify
+
+    from deps import unique_slug
+
+    cursor = db.team_members.find(
+        {"$or": [{"slug": {"$exists": False}}, {"slug": None}, {"slug": ""}]},
+        {"_id": 0, "id": 1, "name": 1},
+    )
+    async for doc in cursor:
+        base = slugify(doc.get("name") or "member")
+        slug = await unique_slug(db.team_members, base, exclude_id=doc["id"])
+        await db.team_members.update_one({"id": doc["id"]}, {"$set": {"slug": slug}})
