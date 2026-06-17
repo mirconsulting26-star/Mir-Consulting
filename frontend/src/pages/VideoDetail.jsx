@@ -4,6 +4,7 @@ import { ArrowLeft, PlayCircle } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import Seo from "@/lib/Seo";
 import ComingSoon from "@/components/sections/ComingSoon";
+import ShareBar from "@/components/sections/ShareBar";
 import { fetchVideo } from "@/lib/api";
 
 export default function VideoDetail() {
@@ -97,6 +98,7 @@ export default function VideoDetail() {
                 <p className="mt-10 text-base sm:text-lg text-mir-textSoft max-w-3xl leading-relaxed whitespace-pre-wrap" data-testid="video-description">
                     {video.description}
                 </p>
+                <ShareBar title={video.title} testId="video-share" className="mt-10" />
             </Section>
         </div>
     );
