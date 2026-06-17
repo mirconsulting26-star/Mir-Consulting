@@ -7,6 +7,7 @@ import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchCaseStudies } from "@/lib/api";
 import { useLiveData } from "@/lib/useLiveData";
+import { formatScheduleShort } from "@/components/sections/ComingSoonBadge";
 import { PAGE_HERO_IMAGES } from "@/lib/content";
 
 const FALLBACK = [
@@ -73,16 +74,20 @@ export default function CaseStudies() {
             <Section testId="case-studies-list" className="border-t border-mir-border bg-mir-surface">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-mir-border border border-mir-border">
                     {list.map((c, i) => {
+                        const scheduled = !!c.is_scheduled;
                         const inner = (
                             <>
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="text-[11px] uppercase tracking-[0.25em] text-mir-blue">
                                         {c.sector}
                                     </div>
-                                    {usingFallback ? (
+                                    {usingFallback || scheduled ? (
                                         <div className="inline-flex items-center gap-2 border border-mir-blue/30 bg-mir-blue/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-mir-blue">
                                             <Clock className="w-3 h-3" />
                                             Coming soon
+                                            {scheduled && c.scheduled_for
+                                                ? ` · ${formatScheduleShort(c.scheduled_for)}`
+                                                : ""}
                                         </div>
                                     ) : (
                                         <div className="inline-flex items-center gap-2 text-mir-blue text-sm font-medium">

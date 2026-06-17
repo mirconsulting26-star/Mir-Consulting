@@ -4,6 +4,7 @@ import { ArrowUpRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Section } from "@/components/sections/Section";
 import HeroImageLayer from "@/components/sections/HeroImageLayer";
+import ComingSoonBadge, { formatScheduleShort } from "@/components/sections/ComingSoonBadge";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { INSIGHTS as FALLBACK, PAGE_HERO_IMAGES } from "@/lib/content";
@@ -54,11 +55,19 @@ export default function Insights() {
                         {items.map((post, i) => {
                             const featured = i === 0;
                             const isFallback = usingFallback || !post.slug;
+                            const scheduled = !!post.is_scheduled;
                             const inner = (
                                 <>
                                     <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-mir-blue mb-6">
                                         <BookOpen className="w-3.5 h-3.5" />
                                         {post.category}
+                                        {scheduled && (
+                                            <ComingSoonBadge
+                                                scheduledFor={post.scheduled_for}
+                                                className="ml-auto"
+                                                testId={`insight-coming-soon-${post.slug || i}`}
+                                            />
+                                        )}
                                     </div>
                                     <h2
                                         className={`font-heading font-medium text-mir-text leading-tight ${
@@ -78,22 +87,30 @@ export default function Insights() {
                                     </p>
                                     <div className="mt-auto pt-8 flex items-center justify-between text-xs text-mir-muted tracking-wide">
                                         <span>
-                                            {post.date ||
-                                                (post.published_at
-                                                    ? new Date(post.published_at).toLocaleDateString(
-                                                          "en-US",
-                                                          {
-                                                              month: "short",
-                                                              year: "numeric",
-                                                          }
-                                                      )
-                                                    : "")}
-                                            {post.read_time || post.readTime
-                                                ? ` · ${post.read_time || post.readTime}`
-                                                : ""}
+                                            {scheduled ? (
+                                                <span className="text-mir-blue">
+                                                    Publishes {formatScheduleShort(post.scheduled_for)}
+                                                </span>
+                                            ) : (
+                                                <>
+                                                    {post.date ||
+                                                        (post.published_at
+                                                            ? new Date(post.published_at).toLocaleDateString(
+                                                                  "en-US",
+                                                                  {
+                                                                      month: "short",
+                                                                      year: "numeric",
+                                                                  }
+                                                              )
+                                                            : "")}
+                                                    {post.read_time || post.readTime
+                                                        ? ` · ${post.read_time || post.readTime}`
+                                                        : ""}
+                                                </>
+                                            )}
                                         </span>
                                         <span className="inline-flex items-center gap-2 text-mir-blue text-sm font-medium">
-                                            Read article
+                                            {scheduled ? "Coming soon" : "Read article"}
                                             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                         </span>
                                     </div>

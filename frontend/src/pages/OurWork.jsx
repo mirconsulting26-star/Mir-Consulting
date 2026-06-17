@@ -8,6 +8,7 @@ import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchWorks } from "@/lib/api";
 import { useLiveData } from "@/lib/useLiveData";
+import ComingSoonBadge, { formatScheduleShort } from "@/components/sections/ComingSoonBadge";
 import { trackEvent } from "@/lib/analytics";
 import { PAGE_HERO_IMAGES } from "@/lib/content";
 
@@ -143,6 +144,7 @@ export default function OurWork() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-mir-border border border-mir-border">
                         {filtered.map((item, i) => {
                             const Icon = TYPE_ICON[item.type] || BookOpen;
+                            const scheduled = !!item.is_scheduled;
                             const href =
                                 item.type === "video"
                                     ? `/our-work/video/${item.slug}`
@@ -175,6 +177,13 @@ export default function OurWork() {
                                         <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-mir-blue mb-5">
                                             <Icon className="w-3.5 h-3.5" />
                                             {TYPE_LABEL[item.type]} · {item.category}
+                                            {scheduled && (
+                                                <ComingSoonBadge
+                                                    scheduledFor={item.scheduled_for}
+                                                    className="ml-auto"
+                                                    testId={`work-coming-soon-${item.slug || i}`}
+                                                />
+                                            )}
                                         </div>
                                         <h2 className="font-heading text-xl md:text-2xl tracking-tight font-medium text-mir-text leading-snug">
                                             {item.title}
@@ -184,16 +193,24 @@ export default function OurWork() {
                                         </p>
                                         <div className="mt-auto pt-8 flex items-center justify-between text-xs text-mir-muted tracking-wide">
                                             <span>
-                                                {item.published_at
-                                                    ? new Date(item.published_at).toLocaleDateString("en-US", {
-                                                          month: "short",
-                                                          year: "numeric",
-                                                      })
-                                                    : ""}
-                                                {item.read_time ? ` · ${item.read_time}` : ""}
+                                                {scheduled ? (
+                                                    <span className="text-mir-blue">
+                                                        Publishes {formatScheduleShort(item.scheduled_for)}
+                                                    </span>
+                                                ) : (
+                                                    <>
+                                                        {item.published_at
+                                                            ? new Date(item.published_at).toLocaleDateString("en-US", {
+                                                                  month: "short",
+                                                                  year: "numeric",
+                                                              })
+                                                            : ""}
+                                                        {item.read_time ? ` · ${item.read_time}` : ""}
+                                                    </>
+                                                )}
                                             </span>
                                             <span className="inline-flex items-center gap-2 text-mir-blue text-sm font-medium">
-                                                Open
+                                                {scheduled ? "Coming soon" : "Open"}
                                                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                             </span>
                                         </div>

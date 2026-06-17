@@ -81,8 +81,9 @@ export default function TeamProfile() {
     const iset = new Set(m.industry_slugs || []);
     const related = (works || []).filter(
         (w) =>
-            (w.service_slugs || []).some((s) => sset.has(s)) ||
-            (w.industry_slugs || []).some((s) => iset.has(s))
+            !w.is_scheduled &&
+            ((w.service_slugs || []).some((s) => sset.has(s)) ||
+                (w.industry_slugs || []).some((s) => iset.has(s)))
     );
     const firstName = (m.name || "").split(" ")[0];
 

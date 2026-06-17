@@ -26,7 +26,9 @@ export default function IndustryDetail() {
 
     if (!industry) return <Navigate to="/industries" replace />;
 
-    const relatedWorks = (works || []).filter((w) => (w.industry_slugs || []).includes(slug));
+    const relatedWorks = (works || []).filter(
+        (w) => !w.is_scheduled && (w.industry_slugs || []).includes(slug)
+    );
     const relatedTeam = (team || []).filter((m) => (m.industry_slugs || []).includes(slug));
     const img = INDUSTRY_HERO_IMAGES[slug];
 
