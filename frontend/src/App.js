@@ -10,7 +10,10 @@ import AnalyticsRouter from "@/lib/AnalyticsRouter";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
+import ServiceDetail from "@/pages/ServiceDetail";
 import Industries from "@/pages/Industries";
+import IndustryDetail from "@/pages/IndustryDetail";
+import TeamProfile from "@/pages/TeamProfile";
 import CaseStudies from "@/pages/CaseStudies";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import Insights from "@/pages/Insights";
@@ -42,7 +45,10 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/about" element={<About />} />
                             <Route path="/services" element={<Services />} />
+                            <Route path="/services/:slug" element={<ServiceDetail />} />
                             <Route path="/industries" element={<Industries />} />
+                            <Route path="/industries/:slug" element={<IndustryDetail />} />
+                            <Route path="/team/:slug" element={<TeamProfile />} />
                             <Route path="/case-studies" element={<CaseStudies />} />
                             <Route
                                 path="/case-studies/:slug"

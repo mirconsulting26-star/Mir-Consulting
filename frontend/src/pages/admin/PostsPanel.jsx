@@ -23,6 +23,8 @@ const EMPTY_POST = {
     cover_image: "",
     read_time: "",
     scheduled_for: "",
+    service_slugs: [],
+    industry_slugs: [],
     status: "draft",
 };
 
@@ -36,6 +38,8 @@ const EMPTY_CS = {
     client_name: "",
     outcomes: [],
     scheduled_for: "",
+    service_slugs: [],
+    industry_slugs: [],
     status: "draft",
 };
 

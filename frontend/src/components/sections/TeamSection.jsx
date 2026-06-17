@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Linkedin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Linkedin, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
 import { Section, SectionHeader } from "@/components/sections/Section";
 import { fetchTeam } from "@/lib/api";
 
@@ -89,7 +90,17 @@ export default function TeamSection() {
                         <div className="text-[10px] uppercase tracking-[0.25em] text-mir-blue mb-2">
                             {m.role}
                         </div>
-                        <div className="font-heading text-xl font-medium text-mir-text">{m.name}</div>
+                        {m.slug ? (
+                            <Link
+                                to={`/team/${m.slug}`}
+                                data-testid={`team-name-link-${m.id}`}
+                                className="font-heading text-xl font-medium text-mir-text hover:text-mir-blue transition-colors"
+                            >
+                                {m.name}
+                            </Link>
+                        ) : (
+                            <div className="font-heading text-xl font-medium text-mir-text">{m.name}</div>
+                        )}
                         <p className="mt-3 text-sm text-mir-muted leading-relaxed line-clamp-5">
                             {m.bio}
                         </p>
@@ -105,17 +116,31 @@ export default function TeamSection() {
                                 ))}
                             </div>
                         )}
-                        {m.linkedin && (
-                            <a
-                                href={m.linkedin}
-                                target="_blank"
-                                rel="noreferrer"
-                                data-testid={`team-linkedin-${m.id}`}
-                                className="mt-auto pt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-mir-blue hover:underline"
-                            >
-                                <Linkedin className="w-3.5 h-3.5" /> LinkedIn
-                            </a>
-                        )}
+                        <div className="mt-auto pt-5 flex items-center justify-between gap-3">
+                            {m.slug ? (
+                                <Link
+                                    to={`/team/${m.slug}`}
+                                    data-testid={`team-view-profile-${m.id}`}
+                                    className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.15em] text-mir-text hover:text-mir-blue transition-colors"
+                                >
+                                    View profile
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                </Link>
+                            ) : (
+                                <span />
+                            )}
+                            {m.linkedin && (
+                                <a
+                                    href={m.linkedin}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    data-testid={`team-linkedin-${m.id}`}
+                                    className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-mir-blue hover:underline"
+                                >
+                                    <Linkedin className="w-3.5 h-3.5" /> LinkedIn
+                                </a>
+                            )}
+                        </div>
                     </motion.article>
                 ))}
             </div>

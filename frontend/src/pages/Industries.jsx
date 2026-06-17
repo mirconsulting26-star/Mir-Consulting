@@ -85,12 +85,25 @@ export default function Industries() {
                                     <div className="font-heading text-mir-blueSoft text-sm tracking-widest mb-4">
                                         Sector /0{i + 1}
                                     </div>
-                                    <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-white">
-                                        {ind.title}
-                                    </h2>
+                                    <Link
+                                        to={`/industries/${ind.slug}`}
+                                        data-testid={`industry-link-${ind.slug}`}
+                                    >
+                                        <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-white hover:text-mir-blueSoft transition-colors">
+                                            {ind.title}
+                                        </h2>
+                                    </Link>
                                     <p className="mt-4 text-white/80 text-sm max-w-md leading-relaxed">
                                         {ind.summary}
                                     </p>
+                                    <Link
+                                        to={`/industries/${ind.slug}`}
+                                        data-testid={`industry-view-${ind.slug}`}
+                                        className="mt-6 group inline-flex items-center gap-2 text-sm text-mir-blueSoft font-medium"
+                                    >
+                                        Explore this sector
+                                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                    </Link>
                                 </div>
                             </div>
                             <div className="lg:col-span-7 p-8 md:p-12 grid grid-cols-1 md:grid-cols-3 gap-10">

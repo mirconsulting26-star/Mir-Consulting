@@ -8,6 +8,8 @@ import {
     deleteTeamMember,
 } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
+import TagSelector from "@/components/admin/TagSelector";
+import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
 const emptyMember = () => ({
     name: "",
@@ -17,6 +19,15 @@ const emptyMember = () => ({
     expertise: [],
     linkedin: "",
     order: 0,
+    slug: "",
+    headline: "",
+    career_story: "",
+    skills: [],
+    tools: [],
+    achievements: [],
+    email: "",
+    service_slugs: [],
+    industry_slugs: [],
 });
 
 export default function TeamPanel({ token, onAuthExpired, onChange }) {
@@ -161,6 +172,9 @@ function TeamEditor({ initial, token, onCancel, onSave }) {
     const [form, setForm] = React.useState({
         ...initial,
         expertise_text: (initial.expertise || []).join(", "),
+        skills_text: (initial.skills || []).join(", "),
+        tools_text: (initial.tools || []).join(", "),
+        achievements_text: (initial.achievements || []).join("\n"),
     });
 
     const submit = (e) => {
@@ -169,18 +183,25 @@ function TeamEditor({ initial, token, onCancel, onSave }) {
             toast.error("Name, role and bio are required.");
             return;
         }
-        const expertise = (form.expertise_text || "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+        const csv = (s) => (s || "").split(",").map((x) => x.trim()).filter(Boolean);
+        const lines = (s) => (s || "").split("\n").map((x) => x.trim()).filter(Boolean);
         onSave({
             name: form.name.trim(),
             role: form.role.trim(),
             bio: form.bio.trim(),
             photo: form.photo || null,
-            expertise,
+            expertise: csv(form.expertise_text),
             linkedin: form.linkedin?.trim() || null,
             order: Number(form.order) || 0,
+            slug: form.slug?.trim() || undefined,
+            headline: form.headline?.trim() || null,
+            career_story: form.career_story?.trim() || null,
+            email: form.email?.trim() || null,
+            skills: csv(form.skills_text),
+            tools: csv(form.tools_text),
+            achievements: lines(form.achievements_text),
+            service_slugs: form.service_slugs || [],
+            industry_slugs: form.industry_slugs || [],
         });
     };
 
@@ -232,6 +253,25 @@ function TeamEditor({ initial, token, onCancel, onSave }) {
                         required
                     />
                 </Field>
+                <Field label="Headline (shown under name on profile page)">
+                    <input
+                        type="text"
+                        value={form.headline || ""}
+                        onChange={(e) => setForm({ ...form, headline: e.target.value })}
+                        data-testid="team-field-headline"
+                        placeholder="e.g. 15 years scaling D2C operations"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <Field label="Career story (long-form, optional)">
+                    <textarea
+                        rows={5}
+                        value={form.career_story || ""}
+                        onChange={(e) => setForm({ ...form, career_story: e.target.value })}
+                        data-testid="team-field-career"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
                 <Field label="Expertise (comma separated)">
                     <input
                         type="text"
@@ -242,6 +282,59 @@ function TeamEditor({ initial, token, onCancel, onSave }) {
                         className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
                     />
                 </Field>
+                <Field label="Skills (comma separated)">
+                    <input
+                        type="text"
+                        value={form.skills_text}
+                        onChange={(e) => setForm({ ...form, skills_text: e.target.value })}
+                        placeholder="SQL, Forecasting, Stakeholder management"
+                        data-testid="team-field-skills"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <Field label="Tools (comma separated)">
+                    <input
+                        type="text"
+                        value={form.tools_text}
+                        onChange={(e) => setForm({ ...form, tools_text: e.target.value })}
+                        placeholder="Power BI, Tableau, Shopify, HubSpot"
+                        data-testid="team-field-tools"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <Field label="Achievements (one per line)">
+                    <textarea
+                        rows={3}
+                        value={form.achievements_text}
+                        onChange={(e) => setForm({ ...form, achievements_text: e.target.value })}
+                        placeholder="Led a 30% efficiency program for a hotel group"
+                        data-testid="team-field-achievements"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <Field label="Email (optional)">
+                    <input
+                        type="email"
+                        value={form.email || ""}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        data-testid="team-field-email"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <TagSelector
+                    label="Related services"
+                    options={SERVICE_OPTIONS}
+                    value={form.service_slugs || []}
+                    onChange={(v) => setForm({ ...form, service_slugs: v })}
+                    testIdPrefix="team-service"
+                />
+                <TagSelector
+                    label="Related industries"
+                    options={INDUSTRY_OPTIONS}
+                    value={form.industry_slugs || []}
+                    onChange={(v) => setForm({ ...form, industry_slugs: v })}
+                    testIdPrefix="team-industry"
+                />
                 <Field label="LinkedIn URL (optional)">
                     <input
                         type="url"
@@ -258,6 +351,16 @@ function TeamEditor({ initial, token, onCancel, onSave }) {
                         onChange={(e) => setForm({ ...form, order: e.target.value })}
                         data-testid="team-field-order"
                         className="w-32 px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
+                    />
+                </Field>
+                <Field label="Profile URL slug (optional — auto-generated from name)">
+                    <input
+                        type="text"
+                        value={form.slug || ""}
+                        onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                        data-testid="team-field-slug"
+                        placeholder="firstname-lastname"
+                        className="w-full px-3 py-2 border border-mir-border text-sm bg-white focus:outline-none focus:border-mir-blue"
                     />
                 </Field>
                 <Field label="Photo">

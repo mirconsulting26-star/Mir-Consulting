@@ -9,6 +9,8 @@ import {
 } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { DatePicker } from "@/components/ui/date-picker";
+import TagSelector from "@/components/admin/TagSelector";
+import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
 const empty = () => ({
     title: "",
@@ -17,6 +19,8 @@ const empty = () => ({
     category: "Video",
     cover_image: null,
     scheduled_for: "",
+    service_slugs: [],
+    industry_slugs: [],
     status: "draft",
 });
 
@@ -211,6 +215,8 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
             category: (form.category || "Video").trim(),
             cover_image: form.cover_image || null,
             scheduled_for: form.scheduled_for || undefined,
+            service_slugs: form.service_slugs || [],
+            industry_slugs: form.industry_slugs || [],
             status: form.status,
         });
     };
@@ -318,6 +324,21 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
                         Set a future date to show a "Coming soon" page until then.
                     </p>
                 </Field>
+
+                <TagSelector
+                    label="Related services"
+                    options={SERVICE_OPTIONS}
+                    value={form.service_slugs || []}
+                    onChange={(v) => setForm({ ...form, service_slugs: v })}
+                    testIdPrefix="video-service"
+                />
+                <TagSelector
+                    label="Related industries"
+                    options={INDUSTRY_OPTIONS}
+                    value={form.industry_slugs || []}
+                    onChange={(v) => setForm({ ...form, industry_slugs: v })}
+                    testIdPrefix="video-industry"
+                />
 
                 <div className="flex justify-end gap-3 pt-2">
                     <button type="button" onClick={onCancel} className="px-5 py-2.5 text-xs uppercase tracking-[0.15em] border border-mir-border text-mir-textSoft hover:border-mir-text hover:text-mir-text" data-testid="video-editor-cancel">

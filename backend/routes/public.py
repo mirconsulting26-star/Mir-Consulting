@@ -146,6 +146,14 @@ async def list_team_public():
     )
 
 
+@router.get("/team/{slug}", response_model=TeamMember)
+async def get_team_member_public(slug: str):
+    doc = await db.team_members.find_one({"slug": slug}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Team member not found")
+    return doc
+
+
 @router.get("/videos", response_model=List[Video])
 async def list_videos_public():
     return await (
@@ -183,6 +191,8 @@ async def list_works(type: Optional[str] = None):
                 "cover_image": p.get("cover_image"),
                 "read_time": p.get("read_time"),
                 "published_at": p.get("published_at"),
+                "service_slugs": p.get("service_slugs", []),
+                "industry_slugs": p.get("industry_slugs", []),
                 "href": f"/insights/{p.get('slug')}",
             })
 
@@ -198,6 +208,8 @@ async def list_works(type: Optional[str] = None):
                 "cover_image": c.get("cover_image"),
                 "client_name": c.get("client_name"),
                 "published_at": c.get("published_at"),
+                "service_slugs": c.get("service_slugs", []),
+                "industry_slugs": c.get("industry_slugs", []),
                 "href": f"/case-studies/{c.get('slug')}",
             })
 
@@ -217,6 +229,8 @@ async def list_works(type: Optional[str] = None):
                 "youtube_id": v.get("youtube_id"),
                 "youtube_url": v.get("youtube_url"),
                 "published_at": v.get("published_at"),
+                "service_slugs": v.get("service_slugs", []),
+                "industry_slugs": v.get("industry_slugs", []),
                 "href": f"/our-work/video/{v.get('slug')}",
             })
 

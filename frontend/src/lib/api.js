@@ -208,6 +208,9 @@ export const fetchEmailStatus = (token) =>
 export const fetchTeam = () =>
     swrFetch("team", () => api.get("/team").then((r) => r.data));
 
+export const fetchTeamMember = (slug) =>
+    swrFetch(`team:${slug}`, () => api.get(`/team/${slug}`).then((r) => r.data));
+
 export const fetchVideos = () =>
     swrFetch("videos", () => api.get("/videos").then((r) => r.data));
 

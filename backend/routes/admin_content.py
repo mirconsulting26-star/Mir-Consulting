@@ -153,7 +153,10 @@ async def list_team_admin(_: bool = Depends(require_admin)):
 
 @router.post("/team", response_model=TeamMember, status_code=201)
 async def create_team_member(payload: TeamMemberCreate, _: bool = Depends(require_admin)):
-    member = TeamMember(**payload.model_dump())
+    data = payload.model_dump()
+    base = slugify(data.get("slug") or data.get("name"))
+    data["slug"] = await unique_slug(db.team_members, base)
+    member = TeamMember(**data)
     await db.team_members.insert_one(member.model_dump())
     return member
 
@@ -162,12 +165,16 @@ async def create_team_member(payload: TeamMemberCreate, _: bool = Depends(requir
 async def update_team_member(
     member_id: str, payload: TeamMemberCreate, _: bool = Depends(require_admin)
 ):
-    updates = {**payload.model_dump(), "updated_at": utc_now_iso()}
+    existing = await db.team_members.find_one({"id": member_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Team member not found")
+    data = payload.model_dump()
+    base = slugify(data.get("slug") or data.get("name"))
+    data["slug"] = await unique_slug(db.team_members, base, exclude_id=member_id)
+    updates = {**data, "updated_at": utc_now_iso()}
     result = await db.team_members.find_one_and_update(
         {"id": member_id}, {"$set": updates}, return_document=True, projection={"_id": 0}
     )
-    if not result:
-        raise HTTPException(status_code=404, detail="Team member not found")
     return TeamMember(**result)
 
 

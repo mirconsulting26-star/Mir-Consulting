@@ -80,15 +80,29 @@ export default function Services() {
                                 <div className="font-heading text-mir-blue/70 text-sm tracking-widest mb-4">
                                     /0{i + 1}
                                 </div>
-                                <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-mir-text">
-                                    {s.title}
-                                </h2>
+                                <Link
+                                    to={`/services/${s.slug}`}
+                                    data-testid={`service-link-${s.slug}`}
+                                    className="block"
+                                >
+                                    <h2 className="font-heading text-3xl md:text-4xl font-light tracking-tight text-mir-text hover:text-mir-blue transition-colors">
+                                        {s.title}
+                                    </h2>
+                                </Link>
                                 <p className="mt-3 text-mir-blueInk text-sm tracking-wide font-medium">
                                     {s.tagline}
                                 </p>
                                 <p className="mt-6 text-mir-muted text-sm leading-relaxed">
                                     {s.summary}
                                 </p>
+                                <Link
+                                    to={`/services/${s.slug}`}
+                                    data-testid={`service-view-${s.slug}`}
+                                    className="mt-6 group inline-flex items-center gap-2 text-sm text-mir-blue font-medium"
+                                >
+                                    View full practice
+                                    <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                </Link>
                                 <div className="mt-8 flex flex-wrap gap-2">
                                     {s.industries.map((ind) => (
                                         <span

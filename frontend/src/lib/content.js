@@ -420,3 +420,52 @@ export const INDUSTRY_TAGS = [
     "Marketplace Sellers",
     "SMEs",
 ];
+
+// --- Hero imagery (slug → image URL). Pages render a premium gradient/grid
+// backdrop underneath, so a 404 on any of these degrades gracefully. ---
+export const SERVICE_HERO_IMAGES = {
+    "business-consulting":
+        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1600",
+    "analytics-bi":
+        "https://images.pexels.com/photos/8640331/pexels-photo-8640331.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "it-consulting":
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1600",
+    "process-automation":
+        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1600",
+    "marketing-brand-growth":
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1600",
+    "ecommerce-online-sales":
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=1600",
+    "digital-transformation":
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1600",
+};
+
+export const INDUSTRY_HERO_IMAGES = {
+    hospitality:
+        "https://images.unsplash.com/photo-1551918120-9739cb430c6d?auto=format&fit=crop&q=80&w=1600",
+    retail:
+        "https://images.unsplash.com/photo-1481437156560-3205f6a55735?auto=format&fit=crop&q=80&w=1600",
+    logistics:
+        "https://images.unsplash.com/photo-1557761469-f29c6e201784?auto=format&fit=crop&q=80&w=1600",
+    manufacturing:
+        "https://images.unsplash.com/photo-1565514020179-026b92b84bb6?auto=format&fit=crop&q=80&w=1600",
+    technology:
+        "https://images.pexels.com/photos/8640331/pexels-photo-8640331.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "d2c-brands":
+        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=1600",
+    "marketplace-sellers":
+        "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=1600",
+    smes:
+        "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&q=80&w=1600",
+};
+
+export const PAGE_HERO_IMAGES = {
+    about:
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600",
+    ourWork:
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1600",
+};
+
+// Selector options for admin content tagging (Phase D)
+export const SERVICE_OPTIONS = SERVICES.map((s) => ({ slug: s.slug, title: s.title }));
+export const INDUSTRY_OPTIONS = INDUSTRIES.map((i) => ({ slug: i.slug, title: i.title }));

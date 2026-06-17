@@ -8,6 +8,8 @@ import { btnGhost, btnPrimary, inputCls } from "./_shared";
 import RichEditor from "@/components/admin/RichEditor";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { DatePicker } from "@/components/ui/date-picker";
+import TagSelector from "@/components/admin/TagSelector";
+import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
 export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
     const [form, setForm] = React.useState(() => ({
@@ -54,6 +56,8 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
             content: form.content,
             cover_image: form.cover_image?.trim() || undefined,
             scheduled_for: form.scheduled_for || undefined,
+            service_slugs: form.service_slugs || [],
+            industry_slugs: form.industry_slugs || [],
             status,
         };
         const payload = isCS
@@ -269,6 +273,21 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                                 </button>
                             )}
                         </Field>
+
+                        <TagSelector
+                            label="Related services"
+                            options={SERVICE_OPTIONS}
+                            value={form.service_slugs || []}
+                            onChange={(v) => set("service_slugs", v)}
+                            testIdPrefix="admin-editor-service"
+                        />
+                        <TagSelector
+                            label="Related industries"
+                            options={INDUSTRY_OPTIONS}
+                            value={form.industry_slugs || []}
+                            onChange={(v) => set("industry_slugs", v)}
+                            testIdPrefix="admin-editor-industry"
+                        />
 
                         {isCS && (
                             <Field label="Outcomes (one per line)">
