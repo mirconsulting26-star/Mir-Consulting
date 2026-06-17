@@ -92,6 +92,13 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
 - Backend `.env`: `ADMIN_PASSWORD`, `ADMIN_TOKEN`, `MONGO_URL`, `DB_NAME`, `CORS_ORIGINS`, `COMPANY_EMAIL`, `SMTP_*` (live), `PUBLIC_BASE_URL`, `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`.
 
 ## Changelog
+
+- 2026-06-17 — **P0 fix: stale public listings (cache.js) + more seed content** (frontend verified 100% — iteration_8.json):
+  - **Root cause of recurring "published post doesn't show on /blog" bug:** the custom `sessionStorage` persistence in `lib/cache.js` kept serving a stale list snapshot across full-page reloads. Prior testing always passed because the testing agent runs a fresh browser (empty sessionStorage) while the real user had a polluted one.
+  - **Fix:** rewrote `frontend/src/lib/cache.js` to be **memory-only** (removed all sessionStorage read/write). Now: full reload → empty cache → always fresh fetch; SPA nav → instant render from memory + immediate background revalidate (`useLiveData` uses `ttl:0` + `subscribeCache`). Fresh & returning sessions now behave identically. Scheduling feature was KEPT (it was never the cause).
+  - **Verified lifecycle:** created a post in admin → SPA-navigated to `/blog` (no hard refresh) → card appeared immediately. Delete propagated too. Zero console errors.
+  - **Seed content:** added 3 more posts (1 future-scheduled "AI in the Back Office") and 2 more case studies (1 future-scheduled "Finance Close Automation") in `backend/scripts/seed_content.py`. Public lists now show 6 posts + 5 case studies, with two live "Coming Soon" teasers demonstrating the scheduled-publishing UI.
+
 - 2025-12 — MVP site (pages, contact form, basic admin).
 - 2026-02 (a) — Full CMS for Insights + Case Studies, lead status workflow + drawer + delete, rate-limiting, SEO basics, markdown live preview, typography plugin, CaseStudyDetail page.
 - 2026-02 (b) — Invoice module (multi-currency, ReportLab PDF, download + public token view + email send), Gmail SMTP integration for new-lead notifications, multi-language site (EN/DE/ES) with globe switcher, stats now include invoice counters.
