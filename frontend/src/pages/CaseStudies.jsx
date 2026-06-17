@@ -6,6 +6,7 @@ import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchCaseStudies } from "@/lib/api";
+import { useLiveData } from "@/lib/useLiveData";
 import { PAGE_HERO_IMAGES } from "@/lib/content";
 
 const FALLBACK = [
@@ -36,24 +37,9 @@ const FALLBACK = [
 ];
 
 export default function CaseStudies() {
-    const [items, setItems] = React.useState(null);
-    const [usingFallback, setUsingFallback] = React.useState(false);
-
-    React.useEffect(() => {
-        fetchCaseStudies()
-            .then((data) => {
-                if (data && data.length > 0) {
-                    setItems(data);
-                } else {
-                    setItems(FALLBACK);
-                    setUsingFallback(true);
-                }
-            })
-            .catch(() => {
-                setItems(FALLBACK);
-                setUsingFallback(true);
-            });
-    }, []);
+    const data = useLiveData("case_studies", fetchCaseStudies);
+    const items = data && data.length > 0 ? data : data === undefined ? null : FALLBACK;
+    const usingFallback = items === FALLBACK;
 
     const list = items || [];
 

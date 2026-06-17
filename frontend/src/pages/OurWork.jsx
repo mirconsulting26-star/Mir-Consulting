@@ -7,6 +7,7 @@ import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchWorks } from "@/lib/api";
+import { useLiveData } from "@/lib/useLiveData";
 import { trackEvent } from "@/lib/analytics";
 import { PAGE_HERO_IMAGES } from "@/lib/content";
 
@@ -30,15 +31,9 @@ const TYPE_LABEL = {
 };
 
 export default function OurWork() {
-    const [items, setItems] = React.useState(null);
+    const items = useLiveData("works:all", (opts) => fetchWorks(undefined, opts));
     const [tab, setTab] = React.useState("all");
     const [category, setCategory] = React.useState("all");
-
-    React.useEffect(() => {
-        fetchWorks()
-            .then(setItems)
-            .catch(() => setItems([]));
-    }, []);
 
     const visibleByTab = (items || []).filter((it) => tab === "all" || it.type === tab);
     const categories = React.useMemo(() => {

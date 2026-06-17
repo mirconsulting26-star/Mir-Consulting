@@ -8,7 +8,7 @@ import {
     deleteVideo,
 } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import { DatePicker } from "@/components/ui/date-picker";
+import DateTimeField from "@/components/admin/DateTimeField";
 import TagSelector from "@/components/admin/TagSelector";
 import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
@@ -313,15 +313,14 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
                     />
                 </Field>
 
-                <Field label="Schedule publish date (optional)">
-                    <DatePicker
+                <Field label="Schedule publish date & time (optional)">
+                    <DateTimeField
                         value={form.scheduled_for || ""}
                         onChange={(d) => setForm({ ...form, scheduled_for: d })}
                         testId="video-field-scheduled"
-                        placeholder="Publish immediately"
                     />
                     <p className="text-[11px] text-mir-muted mt-1">
-                        Set a future date to show a "Coming soon" page until then.
+                        Pick a future date &amp; time to show a "Coming soon" page until then (your local time).
                     </p>
                 </Field>
 

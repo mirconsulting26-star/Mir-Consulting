@@ -7,13 +7,22 @@ import { subscribe } from "@/lib/api";
 
 function formatDate(d) {
     if (!d) return null;
+    const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(d);
     const parsed = new Date(d);
     if (Number.isNaN(parsed.getTime())) return d;
-    return parsed.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    });
+    return parsed.toLocaleString(
+        "en-US",
+        dateOnly
+            ? { month: "long", day: "numeric", year: "numeric" }
+            : {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  timeZoneName: "short",
+              }
+    );
 }
 
 export default function ComingSoon({

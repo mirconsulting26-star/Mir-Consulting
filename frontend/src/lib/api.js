@@ -52,14 +52,14 @@ export const submitLead = (data) => api.post("/leads", data).then((r) => r.data)
 
 export const subscribe = (data) => api.post("/subscribe", data).then((r) => r.data);
 
-export const fetchPosts = () =>
-    swrFetch("posts", () => api.get("/posts").then((r) => r.data));
+export const fetchPosts = (opts) =>
+    swrFetch("posts", () => api.get("/posts").then((r) => r.data), opts);
 
 export const fetchPost = (slug) =>
     swrFetch(`post:${slug}`, () => api.get(`/posts/${slug}`).then((r) => r.data));
 
-export const fetchCaseStudies = () =>
-    swrFetch("case_studies", () => api.get("/case-studies").then((r) => r.data));
+export const fetchCaseStudies = (opts) =>
+    swrFetch("case_studies", () => api.get("/case-studies").then((r) => r.data), opts);
 
 export const fetchCaseStudy = (slug) =>
     swrFetch(`case_study:${slug}`, () =>
@@ -205,21 +205,23 @@ export const fetchEmailStatus = (token) =>
     api.get("/admin/email-status", { headers: authHeader(token) }).then((r) => r.data);
 
 // ====== PUBLIC: TEAM / VIDEOS / WORKS / SITE SETTINGS ======
-export const fetchTeam = () =>
-    swrFetch("team", () => api.get("/team").then((r) => r.data));
+export const fetchTeam = (opts) =>
+    swrFetch("team", () => api.get("/team").then((r) => r.data), opts);
 
 export const fetchTeamMember = (slug) =>
     swrFetch(`team:${slug}`, () => api.get(`/team/${slug}`).then((r) => r.data));
 
-export const fetchVideos = () =>
-    swrFetch("videos", () => api.get("/videos").then((r) => r.data));
+export const fetchVideos = (opts) =>
+    swrFetch("videos", () => api.get("/videos").then((r) => r.data), opts);
 
 export const fetchVideo = (slug) =>
     swrFetch(`video:${slug}`, () => api.get(`/videos/${slug}`).then((r) => r.data));
 
-export const fetchWorks = (type) =>
-    swrFetch(`works:${type || "all"}`, () =>
-        api.get("/works", { params: type ? { type } : {} }).then((r) => r.data)
+export const fetchWorks = (type, opts) =>
+    swrFetch(
+        `works:${type || "all"}`,
+        () => api.get("/works", { params: type ? { type } : {} }).then((r) => r.data),
+        opts
     );
 
 export const fetchSiteSettings = () =>
