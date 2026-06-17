@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, BookOpen, Briefcase, PlayCircle } from "lucide-react";
 import { Section } from "@/components/sections/Section";
+import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { fetchWorks } from "@/lib/api";
@@ -63,17 +64,7 @@ export default function OurWork() {
                 path="/our-work"
             />
             <Section testId="our-work-hero" className="relative grain-overlay bg-mir-bg">
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <img
-                        src={PAGE_HERO_IMAGES.ourWork}
-                        alt=""
-                        aria-hidden="true"
-                        className="w-full h-full object-cover opacity-[0.08] grayscale [mask-image:radial-gradient(ellipse_at_top_right,_black_15%,_transparent_70%)]"
-                        onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                        }}
-                    />
-                </div>
+                <HeroImageLayer src={PAGE_HERO_IMAGES.ourWork} side="right" />
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">

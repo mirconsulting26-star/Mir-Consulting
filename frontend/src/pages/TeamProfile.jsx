@@ -1,11 +1,17 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Linkedin, Mail, Loader2, Check } from "lucide-react";
+import { ArrowLeft, Linkedin, Mail, Loader2, Check, Calendar } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import RelatedRail from "@/components/sections/RelatedRail";
 import Seo from "@/lib/Seo";
 import { fetchTeamMember, fetchWorks } from "@/lib/api";
+
+/* 📝 EDITING THIS PAGE — see /app/docs/CONTENT_EDITING_GUIDE.md
+   Team content is ADMIN-managed (Admin → Team tab), stored in MongoDB
+   (backend/models.py → TeamMember). To add a new section here, render
+   another field from `m` below; to add a new FIELD, also update the
+   TeamMember model and the TeamPanel.jsx admin editor. */
 
 function TagBlock({ label, items }) {
     return (
@@ -120,6 +126,13 @@ export default function TeamProfile() {
                                 </p>
                             )}
                             <div className="mt-8 flex flex-wrap items-center gap-3">
+                                <Link
+                                    to={`/contact?consultant=${encodeURIComponent(m.name)}`}
+                                    data-testid="team-profile-book-call"
+                                    className="inline-flex items-center gap-2 bg-mir-blue hover:bg-mir-blueSoft text-white px-5 py-2.5 text-xs uppercase tracking-[0.15em] font-medium transition-colors"
+                                >
+                                    <Calendar className="w-3.5 h-3.5" /> Book a call with {firstName}
+                                </Link>
                                 {m.linkedin && (
                                     <a
                                         href={m.linkedin}

@@ -8,6 +8,11 @@ import Seo from "@/lib/Seo";
 import { SERVICES, SERVICE_HERO_IMAGES } from "@/lib/content";
 import { fetchWorks, fetchTeam } from "@/lib/api";
 
+/* 📝 EDITING THIS PAGE — see /app/docs/CONTENT_EDITING_GUIDE.md
+   • Copy comes from the matching object in src/lib/content.js → SERVICES.
+   • To add free-form descriptive blocks, add `extraSections: [{heading, body}]`
+     to that service object — they render in the "EXTRA CONTENT" section below. */
+
 export default function ServiceDetail() {
     const { slug } = useParams();
     const service = SERVICES.find((s) => s.slug === slug);
@@ -139,6 +144,25 @@ export default function ServiceDetail() {
                     </div>
                 </div>
             </Section>
+
+            {/* ── 📝 EXTRA CONTENT — renders any `extraSections` defined on this
+                 service in src/lib/content.js. Safe to leave empty. ── */}
+            {service.extraSections?.length > 0 && (
+                <Section testId="service-extra" className="bg-mir-bg border-t border-mir-border">
+                    <div className="max-w-3xl space-y-10">
+                        {service.extraSections.map((sec, i) => (
+                            <div key={i} data-testid={`service-extra-${i}`}>
+                                <h2 className="font-heading text-2xl text-mir-text mb-4">
+                                    {sec.heading}
+                                </h2>
+                                <p className="text-mir-textSoft leading-relaxed whitespace-pre-wrap">
+                                    {sec.body}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            )}
 
             <RelatedRail
                 works={relatedWorks}

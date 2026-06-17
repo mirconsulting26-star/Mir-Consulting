@@ -8,6 +8,11 @@ import Seo from "@/lib/Seo";
 import { INDUSTRIES, INDUSTRY_HERO_IMAGES } from "@/lib/content";
 import { fetchWorks, fetchTeam } from "@/lib/api";
 
+/* 📝 EDITING THIS PAGE — see /app/docs/CONTENT_EDITING_GUIDE.md
+   • Copy comes from the matching object in src/lib/content.js → INDUSTRIES.
+   • To add free-form descriptive blocks, add `extraSections: [{heading, body}]`
+     to that industry object — they render in the "EXTRA CONTENT" section below. */
+
 export default function IndustryDetail() {
     const { slug } = useParams();
     const industry = INDUSTRIES.find((i) => i.slug === slug);
@@ -100,6 +105,25 @@ export default function IndustryDetail() {
                     <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
             </Section>
+
+            {/* ── 📝 EXTRA CONTENT — renders any `extraSections` defined on this
+                 industry in src/lib/content.js. Safe to leave empty. ── */}
+            {industry.extraSections?.length > 0 && (
+                <Section testId="industry-extra" className="bg-mir-bg border-t border-mir-border">
+                    <div className="max-w-3xl space-y-10">
+                        {industry.extraSections.map((sec, i) => (
+                            <div key={i} data-testid={`industry-extra-${i}`}>
+                                <h2 className="font-heading text-2xl text-mir-text mb-4">
+                                    {sec.heading}
+                                </h2>
+                                <p className="text-mir-textSoft leading-relaxed whitespace-pre-wrap">
+                                    {sec.body}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </Section>
+            )}
 
             <RelatedRail
                 works={relatedWorks}

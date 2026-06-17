@@ -1,8 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Mail, MapPin, Phone, ArrowRight, Loader2 } from "lucide-react";
 import { Section } from "@/components/sections/Section";
+import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,7 @@ import {
 import { submitLead } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 import Seo from "@/lib/Seo";
+import { PAGE_HERO_IMAGES } from "@/lib/content";
 
 const INDUSTRIES = [
     "Hospitality",
@@ -42,6 +45,8 @@ const SERVICES = [
 ];
 
 export default function Contact() {
+    const [searchParams] = useSearchParams();
+    const consultant = searchParams.get("consultant");
     const [loading, setLoading] = React.useState(false);
     const [form, setForm] = React.useState({
         full_name: "",
@@ -54,6 +59,19 @@ export default function Contact() {
     });
 
     const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+    // Pre-fill the message when arriving from a "Book a call with <consultant>"
+    // CTA on a team profile page (/contact?consultant=<name>).
+    React.useEffect(() => {
+        if (consultant) {
+            setForm((p) => ({
+                ...p,
+                message:
+                    p.message ||
+                    `Hi, I'd like to book a call with ${consultant}. Here is some context about what I'd like to discuss:\n\n`,
+            }));
+        }
+    }, [consultant]);
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -107,6 +125,7 @@ export default function Contact() {
                 description="Tell us about your operating challenge — marketing, e-commerce, strategy, analytics or automation. A senior MIR Consulting partner will respond, usually within one business day. Free initial consultation."
             />
             <Section testId="contact-hero" className="relative grain-overlay bg-mir-bg">
+                <HeroImageLayer src={PAGE_HERO_IMAGES.contact} side="right" />
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">
@@ -131,6 +150,16 @@ export default function Contact() {
                         <span className="text-mir-blue font-medium">free</span>
                         &nbsp;— no commitment, no payment details.
                     </div>
+                    {consultant && (
+                        <p
+                            data-testid="contact-consultant-note"
+                            className="mt-6 text-sm text-mir-text"
+                        >
+                            You&apos;re requesting a call with{" "}
+                            <span className="font-medium text-mir-blue">{consultant}</span>. We&apos;ve
+                            started your message below — just add your details.
+                        </p>
+                    )}
                 </div>
             </Section>
 

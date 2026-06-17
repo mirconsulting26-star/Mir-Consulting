@@ -1,3 +1,17 @@
+/* ════════════════════════════════════════════════════════════════════════
+   📝  WHERE TO EDIT SITE CONTENT  — see /app/docs/CONTENT_EDITING_GUIDE.md
+   ────────────────────────────────────────────────────────────────────────
+   • SERVICES (below)   → copy shown on /services and /services/:slug
+   • INDUSTRIES (below) → copy shown on /industries and /industries/:slug
+   • To add an extra free-form section to a service/industry DETAIL page,
+     add an `extraSections: [{ heading, body }]` array to that object — it
+     renders automatically (see ServiceDetail.jsx / IndustryDetail.jsx).
+   • Hero / card images live in SERVICE_HERO_IMAGES, INDUSTRY_HERO_IMAGES
+     and PAGE_HERO_IMAGES near the bottom of this file.
+   • TEAM member content is NOT here — it is managed in the Admin portal
+     (Team tab) and stored in MongoDB (see backend/models.py → TeamMember).
+   ════════════════════════════════════════════════════════════════════════ */
+
 export const SERVICES = [
     {
         slug: "business-consulting",
@@ -464,6 +478,16 @@ export const PAGE_HERO_IMAGES = {
         "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600",
     ourWork:
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1600",
+    services:
+        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=1600",
+    industries:
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1600",
+    contact:
+        "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&q=80&w=1600",
+    blog:
+        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1600",
+    caseStudies:
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1600",
 };
 
 // Selector options for admin content tagging (Phase D)

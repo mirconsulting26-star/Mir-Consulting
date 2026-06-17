@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Section } from "@/components/sections/Section";
+import HeroImageLayer from "@/components/sections/HeroImageLayer";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
-import { INDUSTRIES } from "@/lib/content";
+import { INDUSTRIES, PAGE_HERO_IMAGES } from "@/lib/content";
 
 const IMAGES = {
     hospitality:
@@ -45,6 +46,7 @@ export default function Industries() {
                 }}
             />
             <Section testId="industries-hero" className="relative grain-overlay bg-mir-bg">
+                <HeroImageLayer src={PAGE_HERO_IMAGES.industries} side="right" />
                 <div className="absolute inset-0 grid-backdrop opacity-40 pointer-events-none [mask-image:radial-gradient(ellipse_at_top_right,_black_30%,_transparent_70%)]" />
                 <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full halo blur-2xl pointer-events-none" />
                 <div className="relative">
