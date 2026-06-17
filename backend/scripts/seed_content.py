@@ -8,10 +8,15 @@ Defaults: BASE_URL=http://localhost:8001, ADMIN_PASSWORD=mir-admin-2026
 import json
 import sys
 import urllib.request
+from datetime import datetime, timedelta, timezone
 
 BASE_URL = (sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8001").rstrip("/")
 ADMIN_PASSWORD = sys.argv[2] if len(sys.argv) > 2 else "mir-admin-2026"
 API = f"{BASE_URL}/api"
+
+# Future publish dates so seeded scheduled items render as "Coming soon" teasers.
+FUTURE_ISO = (datetime.now(timezone.utc) + timedelta(days=12)).strftime("%Y-%m-%dT09:00:00+00:00")
+FUTURE_ISO_2 = (datetime.now(timezone.utc) + timedelta(days=26)).strftime("%Y-%m-%dT09:00:00+00:00")
 
 
 def _req(method, path, body=None, token=None):
@@ -87,6 +92,67 @@ POSTS = [
         "service_slugs": ["ecommerce-online-sales", "marketing-brand-growth"],
         "industry_slugs": ["d2c-brands", "marketplace-sellers"],
     },
+    {
+        "title": "Why Shopify Replatforming Stalls — and How to De-Risk Yours",
+        "category": "E-commerce",
+        "read_time": "7 min read",
+        "excerpt": "Most replatforming projects don't fail on technology — they fail on data, scope and cutover. A practical checklist to ship without losing rankings or revenue.",
+        "content": (
+            "<p>Replatforming onto Shopify (or off it) rarely stalls because the platform can't do the job. It stalls because "
+            "the migration plan underestimates the unglamorous parts: data integrity, URL continuity and a clean cutover.</p>"
+            "<h2>Protect what already works</h2>"
+            "<p>Before anything else we inventory the URLs, redirects and structured data that earn your organic traffic today, and we "
+            "build a 1:1 redirect map. Losing rankings on launch day is an avoidable, self-inflicted wound.</p>"
+            "<h2>Migrate decisions, not just records</h2>"
+            "<p>Product, customer and order data carry business rules — tax logic, fulfilment routing, discount stacking. We migrate the "
+            "rules deliberately rather than hoping an importer guesses them correctly.</p>"
+            "<h2>Rehearse the cutover</h2>"
+            "<p>A dry-run cutover on a staging store surfaces the surprises while they're cheap. By go-live, the team is executing a "
+            "checklist they've already run twice.</p>"
+        ),
+        "service_slugs": ["ecommerce-online-sales", "digital-transformation"],
+        "industry_slugs": ["retail", "d2c-brands"],
+    },
+    {
+        "title": "The Operating Cadence That Separates Scaling Teams From Stuck Ones",
+        "category": "Business",
+        "read_time": "6 min read",
+        "excerpt": "Strategy fails quietly in the gap between the plan and the week. A lightweight operating cadence turns ambition into accountable, visible progress.",
+        "content": (
+            "<p>Most teams don't lack strategy — they lack a rhythm for executing it. The companies that compound are the ones whose "
+            "weekly and monthly cadence makes progress (and slippage) impossible to ignore.</p>"
+            "<h2>Weekly: the trading review</h2>"
+            "<p>A short, data-led session on the handful of driver metrics the team can actually move this week. No status theatre — "
+            "just what changed, why, and what we'll do about it.</p>"
+            "<h2>Monthly: the operating review</h2>"
+            "<p>A step back to the north-star outcomes: are the drivers translating into results, and where do we reallocate effort?</p>"
+            "<h2>The point is the loop</h2>"
+            "<p>When the cadence is consistent, decisions get made on time, problems surface early, and the strategy stops living only "
+            "in a slide deck.</p>"
+        ),
+        "service_slugs": ["business-consulting", "analytics-bi"],
+        "industry_slugs": ["smes", "logistics"],
+    },
+    {
+        "title": "AI in the Back Office: A Grounded Reality Check for SMEs",
+        "category": "Automation",
+        "read_time": "8 min read",
+        "excerpt": "Cutting past the hype: where AI genuinely earns its keep in finance, ops and support today — and where it quietly burns budget.",
+        "content": (
+            "<p>For most SMEs the question isn't whether to use AI — it's where it pays back without creating new risk. The honest "
+            "answer is narrower, and more useful, than the headlines suggest.</p>"
+            "<h2>Where it earns its keep today</h2>"
+            "<p>Drafting, classification, summarisation and first-line triage — high-volume work with a human checkpoint — is where we "
+            "see real, measurable hours returned to the team.</p>"
+            "<h2>Where it quietly burns budget</h2>"
+            "<p>Anything that demands perfect accuracy with no human in the loop, or that's bolted onto messy data, tends to cost more "
+            "in clean-up than it saves.</p>"
+            "<p>Start where the work is repetitive and the cost of a mistake is low — then expand as trust and data quality improve.</p>"
+        ),
+        "service_slugs": ["process-automation", "digital-transformation"],
+        "industry_slugs": ["smes", "logistics"],
+        "scheduled_for": FUTURE_ISO,
+    },
 ]
 
 CASE_STUDIES = [
@@ -156,6 +222,51 @@ CASE_STUDIES = [
         ],
         "service_slugs": ["analytics-bi", "process-automation"],
         "industry_slugs": ["manufacturing"],
+    },
+    {
+        "title": "Marketing Attribution Rebuild for a Multi-Brand D2C Group",
+        "sector": "E-commerce",
+        "client_name": "Multi-brand D2C group (confidential)",
+        "summary": "Replacing last-click guesswork with a blended attribution model that reallocated spend and lifted blended ROAS by 24%.",
+        "content": (
+            "<p>A group running several D2C brands was making spend decisions on last-click reports that flattered lower-funnel channels "
+            "and starved the activity that actually created demand.</p>"
+            "<h2>What we did</h2>"
+            "<p>We consolidated spend and revenue across brands and channels, built a blended attribution and incrementality view, and "
+            "gave each brand lead a weekly allocation dashboard tied to contribution, not vanity ROAS.</p>"
+            "<h2>Outcome</h2>"
+            "<p>Spend shifted toward genuinely incremental channels and blended ROAS rose meaningfully without increasing total budget.</p>"
+        ),
+        "outcomes": [
+            "24% lift in blended ROAS at flat budget",
+            "Cross-brand spend and revenue consolidated",
+            "Weekly contribution-based allocation per brand",
+        ],
+        "service_slugs": ["marketing-brand-growth", "analytics-bi"],
+        "industry_slugs": ["d2c-brands", "marketplace-sellers"],
+    },
+    {
+        "title": "Finance Close Automation for a Fast-Growing SaaS",
+        "sector": "Technology",
+        "client_name": "Series-B SaaS company (confidential)",
+        "summary": "Cutting the monthly close from 11 days to 4 by automating reconciliations and standardising the reporting pack.",
+        "content": (
+            "<p>A scaling SaaS business was closing its books in eleven painful days, with finance buried in manual reconciliations and "
+            "a reporting pack rebuilt by hand every month.</p>"
+            "<h2>What we did</h2>"
+            "<p>We automated bank and billing reconciliations, standardised the chart of accounts and templated the board reporting pack "
+            "so it regenerates from a single governed dataset.</p>"
+            "<h2>Outcome</h2>"
+            "<p>The close dropped from eleven days to four, freeing the finance team to spend its time on analysis rather than assembly.</p>"
+        ),
+        "outcomes": [
+            "Monthly close cut from 11 days to 4",
+            "Automated bank & billing reconciliations",
+            "Board reporting pack regenerated from one dataset",
+        ],
+        "service_slugs": ["process-automation", "analytics-bi"],
+        "industry_slugs": ["smes"],
+        "scheduled_for": FUTURE_ISO_2,
     },
 ]
 
