@@ -6,6 +6,7 @@ import { Section } from "@/components/sections/Section";
 import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import ComingSoon from "@/components/sections/ComingSoon";
+import ShareBar from "@/components/sections/ShareBar";
 import { fetchCaseStudy } from "@/lib/api";
 
 export default function CaseStudyDetail() {
@@ -139,6 +140,8 @@ export default function CaseStudyDetail() {
                             </ul>
                         </div>
                     )}
+
+                    <ShareBar title={cs.title} testId="case-study-share" className="mt-10" />
 
                     <div className="divider-line-soft my-12" />
                     <div data-testid="case-study-content">

@@ -8,26 +8,12 @@ import CTASection from "@/components/sections/CTASection";
 import Seo from "@/lib/Seo";
 import { INSIGHTS as FALLBACK, PAGE_HERO_IMAGES } from "@/lib/content";
 import { fetchPosts } from "@/lib/api";
+import { useLiveData } from "@/lib/useLiveData";
 
 export default function Insights() {
-    const [posts, setPosts] = React.useState(null);
-    const [usingFallback, setUsingFallback] = React.useState(false);
-
-    React.useEffect(() => {
-        fetchPosts()
-            .then((data) => {
-                if (data && data.length > 0) {
-                    setPosts(data);
-                } else {
-                    setPosts(FALLBACK);
-                    setUsingFallback(true);
-                }
-            })
-            .catch(() => {
-                setPosts(FALLBACK);
-                setUsingFallback(true);
-            });
-    }, []);
+    const data = useLiveData("posts", fetchPosts);
+    const posts = data && data.length > 0 ? data : data === undefined ? null : FALLBACK;
+    const usingFallback = posts === FALLBACK;
 
     const items = posts || [];
 

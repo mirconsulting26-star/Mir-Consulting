@@ -7,6 +7,7 @@ import Seo from "@/lib/Seo";
 import RichContent from "@/components/RichContent";
 import ComingSoon from "@/components/sections/ComingSoon";
 import RelatedInsights from "@/components/sections/RelatedInsights";
+import ShareBar from "@/components/sections/ShareBar";
 import { fetchPost } from "@/lib/api";
 
 export default function InsightDetail() {
@@ -125,6 +126,7 @@ export default function InsightDetail() {
                             : ""}
                         {post.read_time ? ` · ${post.read_time}` : ""}
                     </div>
+                    <ShareBar title={post.title} testId="insight-share" className="mt-8" />
                     <div className="divider-line-soft my-12" />
                     <div data-testid="insight-content">
                         <RichContent

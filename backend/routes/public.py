@@ -1,7 +1,6 @@
 """Public, unauthenticated endpoints: health, leads create, posts, case studies, works feed,
 team (read), videos (read), site-settings (read), subscribe."""
 import logging
-from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
@@ -26,19 +25,18 @@ router = APIRouter()
 SITE_SETTINGS_KEY = "site"
 
 
-def _today_str() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
-
-
 def _live_filter() -> dict:
-    """Mongo filter for published items that are NOT scheduled for a future date."""
-    today = _today_str()
+    """Mongo filter for published items that are NOT scheduled for a future
+    date/time. Compares against the full current UTC ISO timestamp so an item
+    scheduled for earlier today goes live the minute its time passes (works for
+    both legacy date-only values and full datetime values)."""
+    now = utc_now_iso()
     return {
         "status": "published",
         "$or": [
             {"scheduled_for": {"$in": [None, ""]}},
             {"scheduled_for": {"$exists": False}},
-            {"scheduled_for": {"$lte": today}},
+            {"scheduled_for": {"$lte": now}},
         ],
     }
 
@@ -46,7 +44,7 @@ def _live_filter() -> dict:
 def _is_future_scheduled(scheduled_for: Optional[str]) -> bool:
     if not scheduled_for:
         return False
-    return scheduled_for > _today_str()
+    return scheduled_for > utc_now_iso()
 
 
 def _mask_scheduled(doc: dict, content_keys: tuple) -> dict:

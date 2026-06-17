@@ -7,7 +7,7 @@ import { adminTranslate } from "@/lib/api";
 import { btnGhost, btnPrimary, inputCls } from "./_shared";
 import RichEditor from "@/components/admin/RichEditor";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import { DatePicker } from "@/components/ui/date-picker";
+import DateTimeField from "@/components/admin/DateTimeField";
 import TagSelector from "@/components/admin/TagSelector";
 import { SERVICE_OPTIONS, INDUSTRY_OPTIONS } from "@/lib/content";
 
@@ -252,15 +252,14 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                             />
                         </Field>
 
-                        <Field label="Schedule publish date (optional)">
-                            <DatePicker
+                        <Field label="Schedule publish date & time (optional)">
+                            <DateTimeField
                                 value={form.scheduled_for || ""}
                                 onChange={(d) => set("scheduled_for", d)}
                                 testId="admin-editor-scheduled"
-                                placeholder="Publish immediately"
                             />
                             <p className="text-[11px] text-mir-muted">
-                                Set a future date to show a "Coming soon" page until then. Leave empty to go live as soon as you publish.
+                                Pick a future date &amp; time to show a "Coming soon" page until then (your local time). Leave empty to go live as soon as you publish.
                             </p>
                             {form.scheduled_for && (
                                 <button
