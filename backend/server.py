@@ -105,6 +105,7 @@ async def on_startup():
         await auth_admin.ensure_reset_indexes(db)
         await db.team_members.create_index([("order", 1), ("created_at", 1)])
         await db.videos.create_index("slug", unique=True)
+        await db.subscribers.create_index("email", unique=True)
         logger.info("Admin auth bootstrapped (admin seeded, indexes ensured).")
     except Exception as e:  # noqa: BLE001
         logger.exception("Auth bootstrap failed: %s", e)

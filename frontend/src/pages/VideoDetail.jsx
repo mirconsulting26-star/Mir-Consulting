@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, PlayCircle } from "lucide-react";
 import { Section } from "@/components/sections/Section";
 import Seo from "@/lib/Seo";
+import ComingSoon from "@/components/sections/ComingSoon";
 import { fetchVideo } from "@/lib/api";
 
 export default function VideoDetail() {
@@ -41,6 +42,22 @@ export default function VideoDetail() {
             <Section testId="video-loading" className="bg-mir-bg">
                 <div className="text-mir-muted">Loading…</div>
             </Section>
+        );
+    }
+
+    if (video.is_scheduled) {
+        return (
+            <>
+                <Seo title={video.title} noIndex path={`/our-work/video/${video.slug}`} />
+                <ComingSoon
+                    title={video.title}
+                    category={video.category}
+                    scheduledFor={video.scheduled_for}
+                    backTo="/our-work"
+                    backLabel="Back to Our Work"
+                    source="coming-soon-video"
+                />
+            </>
         );
     }
 

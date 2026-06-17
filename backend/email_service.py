@@ -126,6 +126,42 @@ def send_new_lead_notification(lead: dict) -> bool:
     return _send(to=[recipient], subject=subject, body_text=body, body_html=html)
 
 
+def send_new_subscriber_notification(subscriber: dict) -> bool:
+    """Notify the company that someone subscribed to updates."""
+    recipient = os.environ.get("COMPANY_EMAIL", "")
+    if not recipient:
+        return False
+    email = subscriber.get("email", "—")
+    source = subscriber.get("source") or "website"
+    subject = f"New subscriber — {email}"
+    body = (
+        "A new subscriber joined the MIR Consulting mailing list.\n\n"
+        f"Email:    {email}\n"
+        f"Name:     {subscriber.get('name') or '—'}\n"
+        f"Source:   {source}\n"
+        f"Received: {subscriber.get('created_at', '—')}\n\n"
+        "— Manage subscribers from the admin console."
+    )
+    html = f"""
+<!doctype html><html><body style="font-family:Arial,sans-serif;color:#0f172a;background:#f8fafc;padding:24px">
+  <table style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0">
+    <tr><td style="padding:24px 28px;border-bottom:1px solid #e2e8f0">
+      <div style="font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#0a66ff">MIR Consulting</div>
+      <h2 style="margin:8px 0 0;font-weight:300;color:#0f172a">New subscriber</h2>
+    </td></tr>
+    <tr><td style="padding:24px 28px">
+      <table style="width:100%;font-size:14px;color:#0f172a">
+        <tr><td style="color:#64748b;padding:4px 0;width:120px">Email</td><td><a href="mailto:{email}" style="color:#0a66ff">{email}</a></td></tr>
+        <tr><td style="color:#64748b;padding:4px 0">Name</td><td>{subscriber.get('name') or '—'}</td></tr>
+        <tr><td style="color:#64748b;padding:4px 0">Source</td><td>{source}</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>
+"""
+    return _send(to=[recipient], subject=subject, body_text=body, body_html=html)
+
+
 def send_invoice_email(
     *,
     recipient: str,

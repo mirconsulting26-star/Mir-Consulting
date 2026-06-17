@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Linkedin, Facebook, ArrowUpRight } from "lucide-react";
+import { Mail, MapPin, Linkedin, Facebook, ArrowUpRight, Loader2, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { LOGO_SRC, SOCIAL_LINKS } from "@/config/branding";
+import { subscribe } from "@/lib/api";
 
 // X (formerly Twitter) — Lucide doesn't ship an X icon, so we render the
 // official wordmark glyph as an inline SVG sized like the others.
@@ -23,6 +25,71 @@ const SOCIALS = [
     { key: "facebook", url: SOCIAL_LINKS.facebook, Icon: Facebook, label: "Facebook" },
     { key: "x", url: SOCIAL_LINKS.x, Icon: XIcon, label: "X" },
 ];
+
+function SubscribeForm() {
+    const [email, setEmail] = React.useState("");
+    const [busy, setBusy] = React.useState(false);
+    const [done, setDone] = React.useState(false);
+
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        const val = email.trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
+        setBusy(true);
+        try {
+            await subscribe({ email: val, source: "footer" });
+            setDone(true);
+            toast.success("You're subscribed — thank you!");
+        } catch (err) {
+            const detail = err?.response?.data?.detail;
+            toast.error(typeof detail === "string" ? detail : "Subscription failed. Please try again.");
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    if (done) {
+        return (
+            <div
+                data-testid="footer-subscribe-success"
+                className="inline-flex items-center gap-2 text-sm text-mir-blueSoft"
+            >
+                <CheckCircle2 className="w-4 h-4" />
+                You're on the list. We'll be in touch.
+            </div>
+        );
+    }
+
+    return (
+        <form
+            onSubmit={onSubmit}
+            data-testid="footer-subscribe-form"
+            className="flex flex-col sm:flex-row gap-3 max-w-md"
+        >
+            <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                aria-label="Email address"
+                data-testid="footer-subscribe-email"
+                className="flex-1 bg-white/5 border border-white/15 text-white placeholder:text-white/40 px-4 py-3 text-sm focus:outline-none focus:border-mir-blueSoft transition-colors"
+            />
+            <button
+                type="submit"
+                disabled={busy}
+                data-testid="footer-subscribe-submit"
+                className="inline-flex items-center justify-center gap-2 bg-mir-blue hover:bg-mir-blueSoft disabled:opacity-60 text-white px-5 py-3 text-sm font-medium transition-colors"
+            >
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Subscribe
+            </button>
+        </form>
+    );
+}
 
 export default function Footer() {
     const visibleSocials = SOCIALS.filter((s) => !!s.url);
@@ -217,6 +284,19 @@ export default function Footer() {
                 </div>
 
                 <div className="divider-line mt-16" />
+                <div className="py-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6" data-testid="footer-subscribe">
+                    <div>
+                        <div className="text-xs uppercase tracking-[0.2em] text-mir-blueSoft mb-2">
+                            Stay informed
+                        </div>
+                        <p className="text-white/70 text-sm max-w-md">
+                            Get occasional insights on strategy, marketing and e-commerce growth — no spam, unsubscribe anytime.
+                        </p>
+                    </div>
+                    <SubscribeForm />
+                </div>
+
+                <div className="divider-line" />
                 <div className="pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-white/55 tracking-wide gap-3">
                     <div>
                         © {new Date().getFullYear()} MIR Consulting. All rights reserved.

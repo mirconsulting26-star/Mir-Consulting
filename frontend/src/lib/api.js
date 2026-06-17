@@ -50,6 +50,8 @@ const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 // pain on Render's free tier is masked once a visitor has hit the site once.
 export const submitLead = (data) => api.post("/leads", data).then((r) => r.data);
 
+export const subscribe = (data) => api.post("/subscribe", data).then((r) => r.data);
+
 export const fetchPosts = () =>
     swrFetch("posts", () => api.get("/posts").then((r) => r.data));
 
@@ -266,6 +268,29 @@ export const downloadLeadsCsv = async (token) => {
     const a = document.createElement("a");
     a.href = url;
     a.download = `mir-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+};
+
+// ====== ADMIN: SUBSCRIBERS ======
+export const fetchSubscribers = (token) =>
+    api.get("/admin/subscribers", { headers: authHeader(token) }).then((r) => r.data);
+
+export const deleteSubscriber = (token, id) =>
+    api.delete(`/admin/subscribers/${id}`, { headers: authHeader(token) }).then((r) => r.data);
+
+export const downloadSubscribersCsv = async (token) => {
+    const res = await api.get("/admin/subscribers-export.csv", {
+        headers: authHeader(token),
+        responseType: "blob",
+    });
+    const blob = new Blob([res.data], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mir-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();

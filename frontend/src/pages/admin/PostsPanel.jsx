@@ -22,6 +22,7 @@ const EMPTY_POST = {
     category: "",
     cover_image: "",
     read_time: "",
+    scheduled_for: "",
     status: "draft",
 };
 
@@ -34,6 +35,7 @@ const EMPTY_CS = {
     cover_image: "",
     client_name: "",
     outcomes: [],
+    scheduled_for: "",
     status: "draft",
 };
 

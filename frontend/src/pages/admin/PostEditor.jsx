@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { adminTranslate } from "@/lib/api";
 import { btnGhost, btnPrimary, inputCls } from "./_shared";
 import RichEditor from "@/components/admin/RichEditor";
+import { MediaUpload } from "@/components/admin/MediaUpload";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
     const [form, setForm] = React.useState(() => ({
@@ -51,6 +53,7 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
             slug: form.slug?.trim() || undefined,
             content: form.content,
             cover_image: form.cover_image?.trim() || undefined,
+            scheduled_for: form.scheduled_for || undefined,
             status,
         };
         const payload = isCS
@@ -235,14 +238,36 @@ export default function PostEditor({ token, initial, kind, onCancel, onSave }) {
                             />
                         </Field>
 
-                        <Field label="Cover image URL">
-                            <Input
-                                data-testid="admin-editor-cover"
-                                value={form.cover_image || ""}
-                                onChange={(e) => set("cover_image", e.target.value)}
-                                placeholder="https://..."
-                                className={`${inputCls} h-11`}
+                        <Field label="Cover image">
+                            <MediaUpload
+                                token={token}
+                                folder={isCS ? "case-studies" : "blog"}
+                                value={form.cover_image || null}
+                                onChange={(url) => set("cover_image", url || "")}
+                                testIdPrefix="admin-editor-cover"
                             />
+                        </Field>
+
+                        <Field label="Schedule publish date (optional)">
+                            <DatePicker
+                                value={form.scheduled_for || ""}
+                                onChange={(d) => set("scheduled_for", d)}
+                                testId="admin-editor-scheduled"
+                                placeholder="Publish immediately"
+                            />
+                            <p className="text-[11px] text-mir-muted">
+                                Set a future date to show a "Coming soon" page until then. Leave empty to go live as soon as you publish.
+                            </p>
+                            {form.scheduled_for && (
+                                <button
+                                    type="button"
+                                    onClick={() => set("scheduled_for", "")}
+                                    data-testid="admin-editor-scheduled-clear"
+                                    className="text-[11px] uppercase tracking-[0.15em] text-mir-blue hover:underline"
+                                >
+                                    Clear date
+                                </button>
+                            )}
                         </Field>
 
                         {isCS && (

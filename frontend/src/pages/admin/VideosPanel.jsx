@@ -8,6 +8,7 @@ import {
     deleteVideo,
 } from "@/lib/api";
 import { MediaUpload } from "@/components/admin/MediaUpload";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const empty = () => ({
     title: "",
@@ -15,6 +16,7 @@ const empty = () => ({
     youtube_url: "",
     category: "Video",
     cover_image: null,
+    scheduled_for: "",
     status: "draft",
 });
 
@@ -208,6 +210,7 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
             youtube_url: form.youtube_url.trim(),
             category: (form.category || "Video").trim(),
             cover_image: form.cover_image || null,
+            scheduled_for: form.scheduled_for || undefined,
             status: form.status,
         });
     };
@@ -302,6 +305,18 @@ function VideoEditor({ initial, token, onCancel, onSave }) {
                         onChange={(url) => setForm({ ...form, cover_image: url })}
                         testIdPrefix="video-cover"
                     />
+                </Field>
+
+                <Field label="Schedule publish date (optional)">
+                    <DatePicker
+                        value={form.scheduled_for || ""}
+                        onChange={(d) => setForm({ ...form, scheduled_for: d })}
+                        testId="video-field-scheduled"
+                        placeholder="Publish immediately"
+                    />
+                    <p className="text-[11px] text-mir-muted mt-1">
+                        Set a future date to show a "Coming soon" page until then.
+                    </p>
                 </Field>
 
                 <div className="flex justify-end gap-3 pt-2">
