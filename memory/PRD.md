@@ -168,6 +168,12 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
 ## Backlog (refreshed 2026-06-09 — see above)
 
 ## Changelog (continued)
+- 2026-06-17 — **Share controls + live-content tagging** (frontend verified 100% — iteration_5.json):
+  - **Share bar** on published Blog posts, Case Studies and Videos. New reusable `components/sections/ShareBar.jsx` — Copy link (clipboard + toast), LinkedIn / X / Facebook / WhatsApp share intents, and the native mobile share sheet. Wired into InsightDetail (`insight-share`), CaseStudyDetail (`case-study-share`), VideoDetail (`video-share`).
+  - **Tagged live content.** The one real published item (video "Operating model fundamentals") was tagged via API with services `business-consulting` + `digital-transformation` and industry `smes`; confirmed it now flows through `/api/works` and populates the "Related work" rails on `/services/business-consulting`, `/services/digital-transformation` and `/industries/smes`. NOTE: the public Blog/Case-Studies lists otherwise show demo fallback copy (from `lib/content.js`) — real posts/case studies are tagged via the admin editor selectors when published.
+
+
+## Changelog (continued)
 - 2026-06-17 — **Enhancement round (Services redesign, consultant CTA, site-wide hero imagery, content docs)** — frontend verified 100% (iteration_4.json), no backend changes:
   - **Services list redesign.** `/services` cards now mirror the Industries list visual: a dark gradient image panel (per-service photo from `SERVICE_HERO_IMAGES`) on the left with title/tagline/summary/"View full practice", and Problems/Offerings/Outcomes on the right.
   - **Per-consultant "Book a call" CTA.** Team profile pages now have a prominent `Book a call with <firstName>` button → `/contact?consultant=<name>`. The Contact page reads the query param (`useSearchParams`), shows a confirmation note (`contact-consultant-note`) and pre-fills the message (idempotent — won't overwrite typed text). Turns profile views into person-specific leads.
