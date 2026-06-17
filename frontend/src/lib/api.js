@@ -1,7 +1,20 @@
 import axios from "axios";
+import { swrFetch, invalidateCache } from "./cache";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
+
+// Cache keys to wipe when each entity type is mutated by admin.
+const INVALIDATION_MAP = {
+    post: ["posts", "works:all", "works:insight"],
+    case_study: ["case_studies", "works:all", "works:case_study"],
+    video: ["videos", "works:all", "works:video"],
+    team: ["team"],
+    site_settings: ["site_settings"],
+};
+const invalidate = (entity) => {
+    (INVALIDATION_MAP[entity] || []).forEach(invalidateCache);
+};
 
 export const api = axios.create({
     baseURL: API,
@@ -33,14 +46,27 @@ api.interceptors.response.use(
 const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 
 // ====== PUBLIC ======
+// All read-only public endpoints use stale-while-revalidate so cold-start
+// pain on Render's free tier is masked once a visitor has hit the site once.
 export const submitLead = (data) => api.post("/leads", data).then((r) => r.data);
-export const fetchPosts = () => api.get("/posts").then((r) => r.data);
-export const fetchPost = (slug) => api.get(`/posts/${slug}`).then((r) => r.data);
+
+export const fetchPosts = () =>
+    swrFetch("posts", () => api.get("/posts").then((r) => r.data));
+
+export const fetchPost = (slug) =>
+    swrFetch(`post:${slug}`, () => api.get(`/posts/${slug}`).then((r) => r.data));
+
 export const fetchCaseStudies = () =>
-    api.get("/case-studies").then((r) => r.data);
+    swrFetch("case_studies", () => api.get("/case-studies").then((r) => r.data));
+
 export const fetchCaseStudy = (slug) =>
-    api.get(`/case-studies/${slug}`).then((r) => r.data);
-export const fetchCompany = () => api.get("/company").then((r) => r.data);
+    swrFetch(`case_study:${slug}`, () =>
+        api.get(`/case-studies/${slug}`).then((r) => r.data)
+    );
+
+export const fetchCompany = () =>
+    swrFetch("company", () => api.get("/company").then((r) => r.data),
+        { ttl: 60 * 60 * 1000 }); // 1h — rarely changes
 
 // ====== AUTH ======
 export const adminLogin = (password) =>
@@ -90,17 +116,17 @@ export const fetchAdminPosts = (token) =>
 export const createPost = (token, payload) =>
     api
         .post("/admin/posts", payload, { headers: authHeader(token) })
-        .then((r) => r.data);
+        .then((r) => { invalidate("post"); return r.data; });
 
 export const updatePost = (token, id, payload) =>
     api
         .put(`/admin/posts/${id}`, payload, { headers: authHeader(token) })
-        .then((r) => r.data);
+        .then((r) => { invalidate("post"); invalidateCache(`post:${payload.slug || ""}`); return r.data; });
 
 export const deletePost = (token, id) =>
     api
         .delete(`/admin/posts/${id}`, { headers: authHeader(token) })
-        .then((r) => r.data);
+        .then((r) => { invalidate("post"); return r.data; });
 
 // ====== ADMIN: CASE STUDIES ======
 export const fetchAdminCaseStudies = (token) =>
@@ -111,19 +137,19 @@ export const fetchAdminCaseStudies = (token) =>
 export const createCaseStudy = (token, payload) =>
     api
         .post("/admin/case-studies", payload, { headers: authHeader(token) })
-        .then((r) => r.data);
+        .then((r) => { invalidate("case_study"); return r.data; });
 
 export const updateCaseStudy = (token, id, payload) =>
     api
         .put(`/admin/case-studies/${id}`, payload, {
             headers: authHeader(token),
         })
-        .then((r) => r.data);
+        .then((r) => { invalidate("case_study"); invalidateCache(`case_study:${payload.slug || ""}`); return r.data; });
 
 export const deleteCaseStudy = (token, id) =>
     api
         .delete(`/admin/case-studies/${id}`, { headers: authHeader(token) })
-        .then((r) => r.data);
+        .then((r) => { invalidate("case_study"); return r.data; });
 
 // ====== ADMIN: INVOICES ======
 export const fetchAdminInvoices = (token, params = {}) =>
@@ -177,36 +203,54 @@ export const fetchEmailStatus = (token) =>
     api.get("/admin/email-status", { headers: authHeader(token) }).then((r) => r.data);
 
 // ====== PUBLIC: TEAM / VIDEOS / WORKS / SITE SETTINGS ======
-export const fetchTeam = () => api.get("/team").then((r) => r.data);
-export const fetchVideos = () => api.get("/videos").then((r) => r.data);
-export const fetchVideo = (slug) => api.get(`/videos/${slug}`).then((r) => r.data);
+export const fetchTeam = () =>
+    swrFetch("team", () => api.get("/team").then((r) => r.data));
+
+export const fetchVideos = () =>
+    swrFetch("videos", () => api.get("/videos").then((r) => r.data));
+
+export const fetchVideo = (slug) =>
+    swrFetch(`video:${slug}`, () => api.get(`/videos/${slug}`).then((r) => r.data));
+
 export const fetchWorks = (type) =>
-    api.get("/works", { params: type ? { type } : {} }).then((r) => r.data);
-export const fetchSiteSettings = () => api.get("/site-settings").then((r) => r.data);
+    swrFetch(`works:${type || "all"}`, () =>
+        api.get("/works", { params: type ? { type } : {} }).then((r) => r.data)
+    );
+
+export const fetchSiteSettings = () =>
+    swrFetch("site_settings", () => api.get("/site-settings").then((r) => r.data),
+        { ttl: 30 * 60 * 1000 }); // 30 min
 
 // ====== ADMIN: TEAM ======
 export const fetchAdminTeam = (token) =>
     api.get("/admin/team", { headers: authHeader(token) }).then((r) => r.data);
 export const createTeamMember = (token, payload) =>
-    api.post("/admin/team", payload, { headers: authHeader(token) }).then((r) => r.data);
+    api.post("/admin/team", payload, { headers: authHeader(token) })
+        .then((r) => { invalidate("team"); return r.data; });
 export const updateTeamMember = (token, id, payload) =>
-    api.put(`/admin/team/${id}`, payload, { headers: authHeader(token) }).then((r) => r.data);
+    api.put(`/admin/team/${id}`, payload, { headers: authHeader(token) })
+        .then((r) => { invalidate("team"); return r.data; });
 export const deleteTeamMember = (token, id) =>
-    api.delete(`/admin/team/${id}`, { headers: authHeader(token) }).then((r) => r.data);
+    api.delete(`/admin/team/${id}`, { headers: authHeader(token) })
+        .then((r) => { invalidate("team"); return r.data; });
 
 // ====== ADMIN: VIDEOS ======
 export const fetchAdminVideos = (token) =>
     api.get("/admin/videos", { headers: authHeader(token) }).then((r) => r.data);
 export const createVideo = (token, payload) =>
-    api.post("/admin/videos", payload, { headers: authHeader(token) }).then((r) => r.data);
+    api.post("/admin/videos", payload, { headers: authHeader(token) })
+        .then((r) => { invalidate("video"); return r.data; });
 export const updateVideo = (token, id, payload) =>
-    api.put(`/admin/videos/${id}`, payload, { headers: authHeader(token) }).then((r) => r.data);
+    api.put(`/admin/videos/${id}`, payload, { headers: authHeader(token) })
+        .then((r) => { invalidate("video"); invalidateCache(`video:${payload.slug || ""}`); return r.data; });
 export const deleteVideo = (token, id) =>
-    api.delete(`/admin/videos/${id}`, { headers: authHeader(token) }).then((r) => r.data);
+    api.delete(`/admin/videos/${id}`, { headers: authHeader(token) })
+        .then((r) => { invalidate("video"); return r.data; });
 
 // ====== ADMIN: SITE SETTINGS ======
 export const updateSiteSettings = (token, payload) =>
-    api.put("/admin/site-settings", payload, { headers: authHeader(token) }).then((r) => r.data);
+    api.put("/admin/site-settings", payload, { headers: authHeader(token) })
+        .then((r) => { invalidate("site_settings"); return r.data; });
 
 export const verifyGitHubStorage = (token) =>
     api.get("/admin/media/verify-github", { headers: authHeader(token) }).then((r) => r.data);

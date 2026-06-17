@@ -79,6 +79,11 @@ class PostCreate(BaseModel):
     read_time: Optional[str] = Field(default=None, max_length=40)
     status: Literal["draft", "published"] = "draft"
     slug: Optional[str] = Field(default=None, max_length=200)
+    # Phase A — relationships (Phase C will surface them on detail pages)
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    # Phase B — scheduling
+    scheduled_for: Optional[str] = Field(default=None, max_length=40)
 
 
 class Post(BaseModel):
@@ -92,6 +97,9 @@ class Post(BaseModel):
     cover_image: Optional[str] = None
     read_time: Optional[str] = None
     status: Literal["draft", "published"] = "draft"
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    scheduled_for: Optional[str] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None
@@ -109,6 +117,9 @@ class CaseStudyCreate(BaseModel):
     outcomes: Optional[List[str]] = Field(default_factory=list)
     status: Literal["draft", "published"] = "draft"
     slug: Optional[str] = Field(default=None, max_length=200)
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    scheduled_for: Optional[str] = Field(default=None, max_length=40)
 
 
 class CaseStudy(BaseModel):
@@ -123,6 +134,9 @@ class CaseStudy(BaseModel):
     client_name: Optional[str] = None
     outcomes: List[str] = Field(default_factory=list)
     status: Literal["draft", "published"] = "draft"
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    scheduled_for: Optional[str] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None
@@ -133,11 +147,23 @@ class TeamMemberCreate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name: str = Field(min_length=2, max_length=160)
     role: str = Field(min_length=2, max_length=160)
-    bio: str = Field(min_length=4, max_length=1200)
+    bio: str = Field(min_length=4, max_length=8000)
     photo: Optional[str] = Field(default=None, max_length=600)
     expertise: List[str] = Field(default_factory=list)
     linkedin: Optional[str] = Field(default=None, max_length=400)
     order: int = Field(default=0)
+    # Extended profile fields (Phase C)
+    slug: Optional[str] = Field(default=None, max_length=160)
+    headline: Optional[str] = Field(default=None, max_length=240)
+    career_story: Optional[str] = Field(default=None, max_length=8000)
+    skills: List[str] = Field(default_factory=list)
+    tools: List[str] = Field(default_factory=list)
+    achievements: List[str] = Field(default_factory=list)
+    industries_served: List[str] = Field(default_factory=list)
+    email: Optional[str] = Field(default=None, max_length=200)
+    # Relationships
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
 
 
 class TeamMember(TeamMemberCreate):
@@ -156,6 +182,9 @@ class VideoCreate(BaseModel):
     cover_image: Optional[str] = Field(default=None, max_length=600)
     status: Literal["draft", "published"] = "draft"
     slug: Optional[str] = Field(default=None, max_length=200)
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    scheduled_for: Optional[str] = Field(default=None, max_length=40)
 
 
 class Video(BaseModel):
@@ -169,6 +198,9 @@ class Video(BaseModel):
     category: Optional[str] = "Video"
     cover_image: Optional[str] = None
     status: Literal["draft", "published"] = "draft"
+    service_slugs: List[str] = Field(default_factory=list)
+    industry_slugs: List[str] = Field(default_factory=list)
+    scheduled_for: Optional[str] = None
     created_at: str = Field(default_factory=utc_now_iso)
     updated_at: str = Field(default_factory=utc_now_iso)
     published_at: Optional[str] = None

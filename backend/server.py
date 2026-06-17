@@ -63,6 +63,40 @@ app.add_middleware(
 )
 
 
+# Cache-Control for public GETs: browsers + CDNs can serve from cache for
+# 60s, cutting Render origin hits during cold-start recovery. Admin and
+# mutating routes are excluded so authenticated data is never cached.
+_CACHEABLE_PREFIXES = (
+    "/api/posts",
+    "/api/case-studies",
+    "/api/videos",
+    "/api/team",
+    "/api/works",
+    "/api/site-settings",
+    "/api/company",
+    "/api/services",
+    "/api/industries",
+    "/api/subscribers/confirm",  # public confirmation page only
+)
+
+
+@app.middleware("http")
+async def add_public_cache_headers(request, call_next):
+    response = await call_next(request)
+    if (
+        request.method == "GET"
+        and 200 <= response.status_code < 300
+        and any(request.url.path.startswith(p) for p in _CACHEABLE_PREFIXES)
+        and "/admin" not in request.url.path
+    ):
+        # public, browsers + CDNs cache for 60s; stale content allowed for
+        # 5 min while server revalidates in background.
+        response.headers.setdefault(
+            "Cache-Control", "public, max-age=60, stale-while-revalidate=300"
+        )
+    return response
+
+
 # ====================== LIFECYCLE ======================
 @app.on_event("startup")
 async def on_startup():
