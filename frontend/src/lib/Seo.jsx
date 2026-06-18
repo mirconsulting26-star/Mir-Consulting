@@ -10,7 +10,10 @@ const SITE_URL = (
 const BASE_TITLE = "MIR Consulting";
 const DEFAULT_DESC =
     "Senior-led consulting across business strategy, marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), analytics and digital transformation. Free initial consultation.";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/og-cover.jpg`; // optional asset; consumers fall back gracefully when missing
+// Default share image lives on the backend media proxy (public, CDN-cached) so it
+// resolves regardless of which domain the frontend is hosted on.
+const BACKEND_URL = (process.env.REACT_APP_BACKEND_URL || "").replace(/\/$/, "");
+const DEFAULT_OG_IMAGE = `${BACKEND_URL}/api/media/logos/og-cover-a62bc596.jpg`;
 
 /**
  * Seo — single component that sets <title>, meta description, OG + Twitter cards,
@@ -43,7 +46,9 @@ export default function Seo({
     const imgUrl = image
         ? image.startsWith("http")
             ? image
-            : `${SITE_URL}${image.startsWith("/") ? "" : "/"}${image}`
+            : image.startsWith("/api/")
+                ? `${BACKEND_URL}${image}` // backend media proxy paths
+                : `${SITE_URL}${image.startsWith("/") ? "" : "/"}${image}`
         : DEFAULT_OG_IMAGE;
 
     const schemaJson = schema
