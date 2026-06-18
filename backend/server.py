@@ -25,6 +25,7 @@ from routes import (
     admin_leads,
     admin_media,
     admin_translate,
+    og,
     public,
 )
 
@@ -44,6 +45,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Single /api parent router so every nested router auto-inherits the prefix.
 api_router = APIRouter(prefix="/api")
 api_router.include_router(public.router)
+api_router.include_router(og.router)
 api_router.include_router(admin_auth.router)
 api_router.include_router(admin_leads.router)
 api_router.include_router(admin_content.router)
