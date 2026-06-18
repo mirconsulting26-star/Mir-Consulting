@@ -4,6 +4,13 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0F4C8F" />
+
+        <!-- Favicons -->
+        <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+        <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest" />
         <meta
             name="description"
             content="MIR Consulting helps modern businesses grow with senior-led consulting across business strategy, analytics, marketing, e-commerce and digital transformation. Free initial consultation."
@@ -21,7 +28,13 @@
             property="og:description"
             content="Senior-led consulting for ambitious businesses. Strategy, marketing, e-commerce (Shopify, WooCommerce, Wix, Amazon, eBay, Etsy), analytics and digital transformation. Free initial consultation."
         />
-        <meta property="og:url" content="https://mir-consulting-front.onrender.com" />
+        <meta property="og:url" content="%REACT_APP_SITE_URL%" />
+        <meta property="og:image" content="%REACT_APP_BACKEND_URL%/api/media/logos/og-cover-a62bc596.jpg" />
+        <meta property="og:image:secure_url" content="%REACT_APP_BACKEND_URL%/api/media/logos/og-cover-a62bc596.jpg" />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="MIR Consulting — Strategy, Marketing, E-commerce, Intelligence" />
 
         <!-- Twitter / X -->
         <meta name="twitter:card" content="summary_large_image" />
@@ -30,8 +43,10 @@
             name="twitter:description"
             content="Senior-led consulting for ambitious businesses. Strategy · Marketing · E-commerce · Analytics. Free initial consultation."
         />
+        <meta name="twitter:image" content="%REACT_APP_BACKEND_URL%/api/media/logos/og-cover-a62bc596.jpg" />
+        <meta name="twitter:image:alt" content="MIR Consulting" />
 
-        <link rel="canonical" href="https://mir-consulting-front.onrender.com" />
+        <link rel="canonical" href="%REACT_APP_SITE_URL%" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -44,9 +59,9 @@
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
           "name": "MIR Consulting",
-          "url": "https://mir-consulting-front.onrender.com",
+          "url": "%REACT_APP_SITE_URL%",
           "description": "Senior-led consulting across business strategy, marketing, e-commerce, analytics and digital transformation. Free initial consultation for new clients.",
-          "image": "https://mir-consulting-front.onrender.com/og.png",
+          "image": "%REACT_APP_BACKEND_URL%/api/media/logos/og-cover-a62bc596.jpg",
           "areaServed": "Worldwide",
           "inLanguage": ["en","de","es"],
           "founder": { "@type": "Organization", "name": "MIR Consulting" },

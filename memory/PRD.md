@@ -93,6 +93,12 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
 
 ## Changelog
 
+- 2026-06-18 — **UI/branding fixes: horizontal overflow, favicon, social preview** (frontend verified 100% — iteration_9.json):
+  - **Horizontal overflow removed.** Decorative absolutely-positioned "halo"/grid divs with negative offsets (e.g. `-right-32 w-[500px]`) were pushing page width past the viewport. Added a global guard in `index.css` — `html, body, #root { overflow-x: clip; max-width: 100% }` (used `clip` not `hidden` to avoid breaking fixed/sticky). Verified overflow = 0px on /, /blog, /services, /our-work, /contact at 1920/768/390 widths.
+  - **Favicon added.** Generated a full favicon set from the logo (`scripts/gen_brand_assets.py`): favicon.ico (multi-size), 16/32/48 PNGs, apple-touch-icon (180), android-chrome 192/512, plus `site.webmanifest`. Linked in `public/index.html`. All 7 assets serve 200.
+  - **Social-share preview (Open Graph).** `public/index.html` now has full og:image / og:image:width|height(1200x630) / twitter:image meta. Generated a branded 1200×630 `og-cover.jpg` and uploaded it to the public GitHub media proxy, referenced via `%REACT_APP_BACKEND_URL%/api/media/logos/og-cover-a62bc596.jpg` — a stable, public, domain-independent URL that resolves in both preview and production. Fixed stale `onrender.com` URLs → og:url/canonical now use `%REACT_APP_SITE_URL%` (mirconsulting.com). `Seo.jsx` default OG image updated to the same media URL; per-page `/api/media` cover images now resolve against the backend domain.
+
+
 - 2026-06-17 — **P0 fix: stale public listings (cache.js) + more seed content** (frontend verified 100% — iteration_8.json):
   - **Root cause of recurring "published post doesn't show on /blog" bug:** the custom `sessionStorage` persistence in `lib/cache.js` kept serving a stale list snapshot across full-page reloads. Prior testing always passed because the testing agent runs a fresh browser (empty sessionStorage) while the real user had a polluted one.
   - **Fix:** rewrote `frontend/src/lib/cache.js` to be **memory-only** (removed all sessionStorage read/write). Now: full reload → empty cache → always fresh fetch; SPA nav → instant render from memory + immediate background revalidate (`useLiveData` uses `ttl:0` + `subscribeCache`). Fresh & returning sessions now behave identically. Scheduling feature was KEPT (it was never the cause).
