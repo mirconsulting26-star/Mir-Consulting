@@ -93,6 +93,13 @@ Rebuild the entire MIR Consulting website from scratch — a premium, scalable, 
 
 ## Changelog
 
+- 2026-06-18 — **Per-page social rich cards (OG prerender for detail pages)** (backend pytest 5/5 + frontend verified — iteration_10.json):
+  - **Problem:** social crawlers (WhatsApp/LinkedIn/Facebook/X/Slack) don't run JS, so client-side react-helmet OG tags on detail pages were invisible — shared blog/case-study/video links fell back to the generic homepage card.
+  - **Solution (full):** new backend route `routes/og.py` → `GET /api/og/{kind}/{slug}` (kind = blog | case-study | video). Returns lightweight crawler-ready HTML with per-page og:title/description/image, twitter:card, canonical/og:url + JSON-LD (Article/VideoObject), and a meta-refresh + `location.replace` that redirects human visitors to the real SPA page. og:image uses the item's cover_image (falls back to the brand 1200×630 cover; videos use the YouTube thumbnail). Wired into `server.py`.
+  - **ShareBar updated** (`components/sections/ShareBar.jsx`): `ogShareUrl()` maps the current detail path to `${REACT_APP_BACKEND_URL}/api/og/{kind}/{slug}` and uses it for copy-link + all LinkedIn/X/Facebook/WhatsApp intents — so every shared item renders its own rich card.
+  - **Tests:** `backend/tests/test_og.py` (5/5). Frontend: 12/12 share-link checks across blog/case-study/video + human-redirect verified.
+
+
 - 2026-06-18 — **UI/branding fixes: horizontal overflow, favicon, social preview** (frontend verified 100% — iteration_9.json):
   - **Horizontal overflow removed.** Decorative absolutely-positioned "halo"/grid divs with negative offsets (e.g. `-right-32 w-[500px]`) were pushing page width past the viewport. Added a global guard in `index.css` — `html, body, #root { overflow-x: clip; max-width: 100% }` (used `clip` not `hidden` to avoid breaking fixed/sticky). Verified overflow = 0px on /, /blog, /services, /our-work, /contact at 1920/768/390 widths.
   - **Favicon added.** Generated a full favicon set from the logo (`scripts/gen_brand_assets.py`): favicon.ico (multi-size), 16/32/48 PNGs, apple-touch-icon (180), android-chrome 192/512, plus `site.webmanifest`. Linked in `public/index.html`. All 7 assets serve 200.
