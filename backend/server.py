@@ -8,6 +8,7 @@ Modular layout:
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 
@@ -40,6 +41,15 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="MIR Consulting API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# Bare, dependency-free liveness probe. Kept OUTSIDE the /api router so it's
+# reachable as both `/health` (Render health check / keep-alive) and — via the
+# public router — `/api/health`. Performs NO database or external I/O so it
+# returns within a millisecond even while the rest of the app warms up.
+@app.get("/health")
+async def health_root():
+    return {"status": "ok"}
 
 
 # Single /api parent router so every nested router auto-inherits the prefix.
@@ -102,6 +112,16 @@ async def add_public_cache_headers(request, call_next):
 # ====================== LIFECYCLE ======================
 @app.on_event("startup")
 async def on_startup():
+    # Run bootstrap (idempotent index creation + admin seed + slug backfill) in the
+    # background so the app starts accepting requests immediately. This shaves the
+    # app-controlled portion of cold-start latency: /health and read endpoints respond
+    # without waiting on index-creation round-trips against a cold MongoDB Atlas.
+    # Safe because every operation is idempotent and admin login has a bootstrap
+    # fallback (verify_admin_password compares to ADMIN_PASSWORD until seeding lands).
+    asyncio.create_task(_bootstrap())
+
+
+async def _bootstrap():
     try:
         await auth_admin.ensure_admin_seeded(db)
         await auth_admin.ensure_reset_indexes(db)
