@@ -1,0 +1,96 @@
+name: Keep Render Backend Warm
+
+# Pings the backend every ~10 minutes so Render's free tier never spins the
+# container down (it sleeps after ~15 min of no external traffic, then takes
+# ~50s to cold-boot). We hit the dependency-free /health probe first, then warm
+# the public DB-backed read routes (blogs / case studies / videos / works) so the
+# MongoDB connection pool is established too — which also benefits the Admin
+# dashboard and every other API-driven page.
+#
+# ── Setup (one-time) ─────────────────────────────────────────────────────────
+# In the GitHub repo: Settings → Secrets and variables → Actions → "Variables"
+#   tab → New repository variable:
+#       Name:  BACKEND_URL
+#       Value: https://YOUR-RENDER-BACKEND.onrender.com   (no trailing slash)
+#   This is the same origin as the frontend's REACT_APP_BACKEND_URL.
+# (Using a "variable", not a "secret", because the backend URL is public anyway
+#  and it makes the run logs readable. Switch to a secret if you prefer.)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # Every 10 minutes. NOTE: GitHub may delay scheduled runs by a few minutes
+    # under load; 10 min still leaves margin under Render's 15-min spin-down.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {} # allow manual "Run workflow" from the Actions tab
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping health endpoint and warm critical routes
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+        run: |
+          set -uo pipefail
+
+          if [ -z "${BACKEND_URL:-}" ]; then
+            echo "::error::Repository variable BACKEND_URL is not set."
+            echo "Set it in Settings → Secrets and variables → Actions → Variables → BACKEND_URL"
+            exit 1
+          fi
+
+          BASE="${BACKEND_URL%/}"
+          echo "Target backend: $BASE"
+
+          # 1) Liveness probe — must succeed. cold-boot can take ~50s, so allow a
+          #    generous timeout and one retry.
+          echo "── Pinging $BASE/health"
+          code=$(curl -sS -o /tmp/health.out -w "%{http_code}" \
+                   --max-time 90 --retry 2 --retry-delay 10 --retry-all-errors \
+                   "$BASE/health" || echo "000")
+          echo "  /health -> HTTP $code"
+          cat /tmp/health.out || true
+          echo
+
+          if [ "$code" != "200" ]; then
+            # Fallback to the /api/health alias (used when the app is mounted
+            # behind an /api ingress prefix).
+            echo "── /health not 200, trying $BASE/api/health"
+            code=$(curl -sS -o /tmp/health.out -w "%{http_code}" \
+                     --max-time 90 --retry 2 --retry-delay 10 --retry-all-errors \
+                     "$BASE/api/health" || echo "000")
+            echo "  /api/health -> HTTP $code"
+            cat /tmp/health.out || true
+            echo
+          fi
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Health check failed (HTTP $code). Backend may be down."
+            exit 1
+          fi
+          echo "✅ Health check OK"
+
+          # 2) Warm the DB-backed public read routes (best-effort — never fails the
+          #    job, since the container is already warm after /health).
+          warm() {
+            local path="$1"
+            local c
+            c=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 60 "$BASE$path" || echo "000")
+            echo "  warm $path -> HTTP $c"
+            if [ "$c" != "200" ]; then
+              echo "::warning::Warm request $path returned HTTP $c"
+            fi
+          }
+
+          echo "── Warming critical API routes"
+          warm "/api/posts"
+          warm "/api/case-studies"
+          warm "/api/videos"
+          warm "/api/works"
+          echo "Done."

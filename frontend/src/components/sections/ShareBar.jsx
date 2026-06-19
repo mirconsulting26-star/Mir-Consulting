@@ -12,13 +12,40 @@ function XIcon({ className }) {
 }
 
 /**
+ * Map the current detail-page path to the backend OG prerender URL so shared
+ * links produce a per-item social card. Falls back to the raw page URL when the
+ * path isn't a recognised content detail page.
+ */
+function ogShareUrl() {
+    if (typeof window === "undefined") return "";
+    const href = window.location.href;
+    const backend = (process.env.REACT_APP_BACKEND_URL || "").replace(/\/$/, "");
+    if (!backend) return href;
+    const path = window.location.pathname;
+    const map = [
+        { re: /^\/blog\/([^/]+)\/?$/, kind: "blog" },
+        { re: /^\/insights\/([^/]+)\/?$/, kind: "blog" },
+        { re: /^\/case-studies\/([^/]+)\/?$/, kind: "case-study" },
+        { re: /^\/our-work\/video\/([^/]+)\/?$/, kind: "video" },
+    ];
+    for (const { re, kind } of map) {
+        const m = path.match(re);
+        if (m) return `${backend}/api/og/${kind}/${m[1]}`;
+    }
+    return href;
+}
+
+/**
  * Share control for published content (blog posts, case studies, videos).
  * Copies the canonical URL and offers LinkedIn / X / Facebook / WhatsApp
  * share intents, plus the native share sheet on mobile.
  */
 export default function ShareBar({ title = "", testId = "share-bar", className = "" }) {
     const [copied, setCopied] = React.useState(false);
-    const url = typeof window !== "undefined" ? window.location.href : "";
+    // Social crawlers don't run JS, so we share a backend prerender URL that
+    // serves per-page OG tags and redirects humans to the real SPA page. This
+    // makes each shared blog/case-study/video render its own rich preview card.
+    const url = ogShareUrl();
     const enc = encodeURIComponent(url);
     const encTitle = encodeURIComponent(title);
 
