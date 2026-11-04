@@ -189,7 +189,7 @@ def build_marketing():
     ])
     story.append(Paragraph(
         "Done? Count the blanks. More than 8? You're leaving money on the table — "
-        "book a free 30-minute call at mirconsulting.com and we'll prioritise the fixes "
+        "book a free 30-minute call at https://www.mirconsulting.publicvm.com and we'll prioritise the fixes "
         "with the fastest payback.",
         s["cta"],
     ))
@@ -255,7 +255,7 @@ def build_ecommerce():
     story.append(Paragraph(
         "Tally the unchecked boxes. More than 10 blanks usually means a 20–40% "
         "conversion lift is achievable in 90 days. Bring this audit to a free call "
-        "at mirconsulting.com and we'll map a fix sequence to it.",
+        "at https://www.mirconsulting.publicvm.com and we'll map a fix sequence to it.",
         s["cta"],
     ))
     out = OUT_DIR / "ecommerce-audit.pdf"

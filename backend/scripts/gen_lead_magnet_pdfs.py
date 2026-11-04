@@ -328,7 +328,7 @@ def build_marketing_quick_check():
         "spend 30 minutes — no slide deck, no pitch — walking through your three "
         "biggest unticked boxes and turning them into a 90-day action plan. "
         "No commitment to engage afterwards. Book at "
-        "<font color='#0F4C8F'><b>mirconsulting.com/contact</b></font>."
+        "<font color='#0F4C8F'><b>https://www.mirconsulting.publicvm.com/contact</b></font>."
     ))
 
     doc.build(
@@ -476,7 +476,7 @@ def build_ecommerce_audit():
         "<b>Free 30-minute store walk-through.</b> &nbsp;We'll share-screen with you, "
         "go through your store live, and identify the three highest-impact fixes "
         "you can ship this week. No deck. No pitch. No commitment. Book at "
-        "<font color='#0F4C8F'><b>mirconsulting.com/contact</b></font>."
+        "<font color='#0F4C8F'><b>https://www.mirconsulting.publicvm.com/contact</b></font>."
     ))
 
     doc.build(

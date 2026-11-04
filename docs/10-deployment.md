@@ -4,10 +4,10 @@
 
 ## Pre-flight
 
-1. **Domain decided** (e.g. `mirconsulting.com`).
+1. **Public domain decided** (currently `https://www.mirconsulting.publicvm.com`).
 2. **DNS** points to your hosting provider (Emergent / Vercel / Railway / etc.). For Emergent, use the "Deploy" button — the platform handles the certs.
 3. **Backend env**:
-   - `PUBLIC_BASE_URL=https://mirconsulting.com`
+   - `PUBLIC_BASE_URL=https://www.mirconsulting.publicvm.com`
    - `STRIPE_API_KEY` swapped from `sk_test_emergent` to your live restricted key.
    - `JWT_SECRET` regenerated (32+ bytes).
    - `ADMIN_INITIAL_PASSWORD` only needed on the very first deploy — remove or rotate after first login.
@@ -15,12 +15,12 @@
    - `GITHUB_TOKEN` rotated and limited to read+write on the media repo only.
    - `EMERGENT_LLM_KEY` set with a healthy balance.
 4. **Frontend env**:
-   - `REACT_APP_BACKEND_URL=https://mirconsulting.com` (or whichever your prod ingress is).
-   - `REACT_APP_SITE_URL=https://mirconsulting.com` ← drives canonical/hreflang. **Always set this.**
+   - `REACT_APP_BACKEND_URL=https://mir-consulting-back.onrender.com` ← backend API; keep separate from the website.
+   - `REACT_APP_SITE_URL=https://www.mirconsulting.publicvm.com` ← drives canonical/hreflang. **Always set this.**
 5. **Sitemap / robots**:
-   - Edit `/app/frontend/public/sitemap.xml` and replace any preview URLs with the production domain.
+   - Keep `/app/frontend/public/sitemap.xml` and `robots.txt` on the canonical public domain only; do not list the Render frontend fallback.
    - `robots.txt` already disallows `/admin*` — verify.
-6. **Stripe webhook**: in the Stripe dashboard, register `https://mirconsulting.com/api/webhook/stripe` for events `checkout.session.completed` and `payment_intent.succeeded`. Copy the signing secret into the relevant env var (if your Stripe playbook uses one).
+6. **Stripe webhook**: if enabled, use the backend service URL (currently `https://mir-consulting-back.onrender.com`) for its webhook endpoint, not the public frontend domain.
 
 ## Deploy
 
@@ -32,11 +32,12 @@ If using Emergent:
 ## Post-deploy smoke
 
 ```bash
-PROD=https://mirconsulting.com
-curl -s "$PROD/api/" | python3 -m json.tool                        # health
-curl -s "$PROD/sitemap.xml" | head                                 # SEO
-curl -s "$PROD/robots.txt" | head                                  # SEO
-curl -s -X POST "$PROD/api/admin/login" -H "Content-Type: application/json" \
+WEB=https://www.mirconsulting.publicvm.com
+API=https://mir-consulting-back.onrender.com
+curl -s "$API/api/health" | python3 -m json.tool                   # backend health
+curl -s "$WEB/sitemap.xml" | head                                  # SEO
+curl -s "$WEB/robots.txt" | head                                   # SEO
+curl -s -X POST "$API/api/admin/login" -H "Content-Type: application/json" \
    -d '{"password":"<new prod password>"}' | python3 -m json.tool  # admin auth
 ```
 

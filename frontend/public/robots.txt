@@ -5,4 +5,4 @@ Disallow: /admin/
 Disallow: /admin/reset/
 Disallow: /api/
 
-Sitemap: https://mirconsulting.com/sitemap.xml
+Sitemap: https://www.mirconsulting.publicvm.com/sitemap.xml

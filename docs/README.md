@@ -2,7 +2,7 @@
 
 > Project source of truth. Read this first.
 
-Welcome to the engineering documentation for **mirconsulting.com** (the premium consulting
+Welcome to the engineering documentation for **www.mirconsulting.publicvm.com** (the premium consulting
 website with a custom CMS, multi-language frontend, invoicing & payments, and an internal
 admin portal).
 

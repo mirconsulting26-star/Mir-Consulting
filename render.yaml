@@ -21,7 +21,7 @@ services:
       - key: DB_NAME
         value: mir_consulting
       - key: CORS_ORIGINS
-        sync: false                # e.g. https://mirconsulting.com
+        value: https://www.mirconsulting.publicvm.com,https://mir-consulting-front.onrender.com
       - key: ADMIN_PASSWORD
         generateValue: true        # bootstrap-only; live password is hashed in DB
       - key: ADMIN_TOKEN
@@ -37,7 +37,7 @@ services:
       - key: SMTP_APP_PASSWORD
         sync: false                # Google App Password
       - key: PUBLIC_BASE_URL
-        sync: false                # production https URL of the frontend
+        value: https://www.mirconsulting.publicvm.com
       - key: GITHUB_TOKEN
         sync: false                # PAT with Contents: Read+Write
       - key: GITHUB_REPO
@@ -59,9 +59,9 @@ services:
       - key: NODE_VERSION
         value: 20.18.0
       - key: REACT_APP_BACKEND_URL
-        sync: false                # https://mir-consulting-api.onrender.com
+        value: https://mir-consulting-back.onrender.com
       - key: REACT_APP_SITE_URL
-        sync: false                # https://mirconsulting.com
+        value: https://www.mirconsulting.publicvm.com
       - key: ENABLE_HEALTH_CHECK
         value: "false"
     routes:

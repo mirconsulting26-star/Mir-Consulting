@@ -3,8 +3,7 @@ import { Helmet } from "react-helmet-async";
 
 const SITE_URL = (
     process.env.REACT_APP_SITE_URL ||
-    process.env.REACT_APP_BACKEND_URL ||
-    "https://mirconsulting.com"
+    "https://www.mirconsulting.publicvm.com"
 ).replace(/\/$/, "");
 
 const BASE_TITLE = "MIR Consulting";

@@ -15,7 +15,7 @@ All secrets live in **two files**:
 | `DB_NAME` | Mongo database name | ✅ | `mir_consulting` |
 | `ADMIN_INITIAL_PASSWORD` | Seed password used the FIRST time the admin user is created in DB | ✅ | `mir-admin-2026` |
 | `JWT_SECRET` | Secret used to sign admin JWT-style tokens | ✅ | `(long random string)` |
-| `PUBLIC_BASE_URL` | The fully-qualified URL the public uses (used inside invoice emails) | ✅ at deploy | `https://mirconsulting.com` |
+| `PUBLIC_BASE_URL` | The fully-qualified public frontend URL used in invoice and password-reset emails | ✅ at deploy | `https://www.mirconsulting.publicvm.com` |
 | `COMPANY_EMAIL` | "From" + reply-to address shown on invoices/emails | ✅ | `hello@mirconsulting.com` |
 | `SMTP_HOST` | Gmail SMTP host | ✅ | `smtp.gmail.com` |
 | `SMTP_PORT` | Gmail SMTP port | ✅ | `587` |
@@ -37,10 +37,12 @@ All secrets live in **two files**:
 | Key | What it does | Required |
 | --- | --- | --- |
 | `REACT_APP_BACKEND_URL` | Base URL the SPA uses to call the API (NEVER hardcode this anywhere) | ✅ |
-| `REACT_APP_SITE_URL` | Canonical production URL used for SEO canonical/hreflang tags | ✅ at deploy |
+| `REACT_APP_SITE_URL` | Canonical public frontend URL used for SEO canonical/hreflang/social metadata; defaults to `https://www.mirconsulting.publicvm.com` | ✅ at deploy |
 
-> **Hot tip**: in production these will differ — `REACT_APP_BACKEND_URL` may be the same domain
-> (with `/api` rewritten via reverse proxy) while `REACT_APP_SITE_URL` is the marketing canonical.
+> **Important**: these are different origins. `REACT_APP_BACKEND_URL` is the API service
+> (`https://mir-consulting-back.onrender.com`); `REACT_APP_SITE_URL` is the public website
+> (`https://www.mirconsulting.publicvm.com`). The Render frontend fallback is
+> `https://mir-consulting-front.onrender.com`.
 
 ## How to obtain each credential
 
