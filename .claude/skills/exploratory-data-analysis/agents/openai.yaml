@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exploratory Data Analysis"
+  short_description: "Profile, explore, and reconcile datasets"
+  default_prompt: "Use $exploratory-data-analysis to investigate this dataset and explain the strongest supported findings."

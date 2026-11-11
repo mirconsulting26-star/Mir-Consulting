@@ -1,0 +1,4 @@
+interface:
+  display_name: "Statistical Analysis"
+  short_description: "Choose and apply defensible statistical methods"
+  default_prompt: "Use $statistical-analysis to test this question and report effect size, uncertainty, and limitations."

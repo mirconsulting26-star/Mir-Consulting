@@ -1,27 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/about</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/services</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/industries</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/our-work</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/blog</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/case-studies</loc>
-  </url>
-  <url>
-    <loc>https://www.mirconsulting.publicvm.com/contact</loc>
-  </url>
-</urlset>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.mirconsulting.publicvm.com/sitemap-pages.xml</loc>
+  </sitemap>
+</sitemapindex>

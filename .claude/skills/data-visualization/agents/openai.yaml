@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Visualization"
+  short_description: "Turn analysis into clear, honest visuals"
+  default_prompt: "Use $data-visualization to choose and produce the clearest visual for these findings."
