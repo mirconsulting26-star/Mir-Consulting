@@ -5,7 +5,6 @@ const DEFAULT_SITE_URL = "https://www.mirconsulting.publicvm.com";
 const SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9";
 const STYLESHEET_INSTRUCTION =
     '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>';
-const PAGE_SITEMAP = "sitemap-pages.xml";
 const CONTENT_SITEMAPS = [
     { file: "sitemap-posts.xml", endpoint: "/posts", route: "/blog" },
     {
@@ -63,16 +62,6 @@ function renderUrlSet(urls) {
         .join("\n");
     const body = entries ? `${entries}\n` : "";
     return `<?xml version="1.0" encoding="UTF-8"?>\n${STYLESHEET_INSTRUCTION}\n<urlset xmlns="${SITEMAP_NAMESPACE}">\n${body}</urlset>\n`;
-}
-
-function renderSitemapIndex(sitemapFiles, siteUrl) {
-    const entries = sitemapFiles
-        .map(
-            (file) =>
-                `  <sitemap>\n    <loc>${escapeXml(`${siteUrl}/${file}`)}</loc>\n  </sitemap>`
-        )
-        .join("\n");
-    return `<?xml version="1.0" encoding="UTF-8"?>\n${STYLESHEET_INSTRUCTION}\n<sitemapindex xmlns="${SITEMAP_NAMESPACE}">\n${entries}\n</sitemapindex>\n`;
 }
 
 async function fetchPublicCollection(apiUrl, endpoint) {
@@ -141,8 +130,22 @@ async function generateSitemaps() {
     const siteUrl = getSiteUrl();
     const apiUrl = getApiUrl();
     const outputDir = path.resolve(__dirname, "..", "build");
+    const sitemapPath = path.join(outputDir, "sitemap.xml");
 
-    await fs.access(path.join(outputDir, PAGE_SITEMAP));
+    const staticSitemap = await fs.readFile(sitemapPath, "utf8");
+    if (!staticSitemap.includes(`<urlset xmlns="${SITEMAP_NAMESPACE}">`)) {
+        throw new Error("frontend/public/sitemap.xml must contain a sitemap URL set.");
+    }
+    const staticUrls = [...staticSitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(
+        ([, url]) => url.trim()
+    );
+    if (staticUrls.length === 0) {
+        throw new Error("frontend/public/sitemap.xml must contain at least one <loc> URL.");
+    }
+    if (staticUrls.some((url) => !url.startsWith(`${siteUrl}/`))) {
+        throw new Error("Static sitemap URLs must use the configured REACT_APP_SITE_URL.");
+    }
+
     await waitForBackend(apiUrl);
 
     const collections = await Promise.all(
@@ -152,7 +155,7 @@ async function generateSitemaps() {
         }))
     );
 
-    const sitemapFiles = [PAGE_SITEMAP];
+    const allUrls = [...staticUrls];
     for (const sitemap of collections) {
         const urls = getContentUrls(
             sitemap.records,
@@ -161,26 +164,19 @@ async function generateSitemaps() {
             siteUrl
         );
         if (urls.length === 0) {
-            console.log(`Omitted ${sitemap.file}; it has no public URLs.`);
+            console.log(`No public URLs from ${sitemap.endpoint}.`);
             continue;
         }
-        await fs.writeFile(
-            path.join(outputDir, sitemap.file),
-            renderUrlSet(urls),
-            "utf8"
-        );
-        sitemapFiles.push(sitemap.file);
-        console.log(`Generated ${sitemap.file} (${urls.length} URLs).`);
+        allUrls.push(...urls);
+        console.log(`Added ${urls.length} URLs from ${sitemap.endpoint}.`);
     }
 
     await fs.writeFile(
-        path.join(outputDir, "sitemap.xml"),
-        renderSitemapIndex(sitemapFiles, siteUrl),
+        sitemapPath,
+        renderUrlSet([...new Set(allUrls)]),
         "utf8"
     );
-    console.log(
-        `Generated sitemap.xml with ${sitemapFiles.length} child sitemaps.`
-    );
+    console.log(`Generated sitemap.xml with ${new Set(allUrls).size} URLs.`);
 }
 
 if (require.main === module) {
@@ -193,6 +189,5 @@ if (require.main === module) {
 module.exports = {
     escapeXml,
     generateSitemaps,
-    renderSitemapIndex,
     renderUrlSet,
 };
