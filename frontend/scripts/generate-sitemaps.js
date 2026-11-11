@@ -126,6 +126,37 @@ function getContentUrls(records, route, sitemapName, siteUrl) {
     });
 }
 
+function getStaticUrls(sitemap, siteUrl) {
+    const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(([, value]) =>
+        value.trim()
+    );
+    if (locs.length === 0) {
+        throw new Error("frontend/public/sitemap.xml must contain at least one <loc> URL.");
+    }
+
+    return locs.map((loc) => {
+        let parsed;
+        try {
+            parsed = new URL(loc);
+        } catch {
+            throw new Error(`Invalid static sitemap URL: ${loc}`);
+        }
+        if (
+            !["http:", "https:"].includes(parsed.protocol) ||
+            parsed.search ||
+            parsed.hash
+        ) {
+            throw new Error(`Invalid static sitemap URL: ${loc}`);
+        }
+        if (parsed.origin !== siteUrl) {
+            console.warn(
+                `Replaced static sitemap host ${parsed.origin} with configured site URL ${siteUrl}.`
+            );
+        }
+        return `${siteUrl}${parsed.pathname}`;
+    });
+}
+
 async function generateSitemaps() {
     const siteUrl = getSiteUrl();
     const apiUrl = getApiUrl();
@@ -136,15 +167,7 @@ async function generateSitemaps() {
     if (!staticSitemap.includes(`<urlset xmlns="${SITEMAP_NAMESPACE}">`)) {
         throw new Error("frontend/public/sitemap.xml must contain a sitemap URL set.");
     }
-    const staticUrls = [...staticSitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(
-        ([, url]) => url.trim()
-    );
-    if (staticUrls.length === 0) {
-        throw new Error("frontend/public/sitemap.xml must contain at least one <loc> URL.");
-    }
-    if (staticUrls.some((url) => !url.startsWith(`${siteUrl}/`))) {
-        throw new Error("Static sitemap URLs must use the configured REACT_APP_SITE_URL.");
-    }
+    const staticUrls = getStaticUrls(staticSitemap, siteUrl);
 
     await waitForBackend(apiUrl);
 
@@ -189,5 +212,6 @@ if (require.main === module) {
 module.exports = {
     escapeXml,
     generateSitemaps,
+    getStaticUrls,
     renderUrlSet,
 };
